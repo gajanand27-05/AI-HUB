@@ -489,6 +489,8 @@ def execute_tasks(tasks, user_input):
 
         elif input_type == "previous_output":
             input_data = context.get("last_output", "")
+            if not input_data:
+                return {"error": f"Task '{tool}' requires previous output, but none is available."}
 
         else:
             return {"error": f"Unsupported input type: {input_type}"}
