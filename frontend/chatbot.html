@@ -116,7 +116,7 @@
     </div>
 
     <!-- Static Center Core (Extracted from rotating hub) -->
-    <div class="center-core">
+    <div class="center-core clickable" onclick="openAssistant()">
       <h2>AI HUB</h2>
     </div>
   </div>
@@ -291,6 +291,40 @@
     </div>
   </div>
 
+  <!-- AI Assistant Modal -->
+  <div id="assistant-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2>🤖 AI Hub Assistant</h2>
+        <button class="close-btn" onclick="closeModal('assistant-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="assistant-input-row">
+          <textarea id="assistant-text-input" placeholder="Ask AI Hub... (e.g. Summarize this and translate to Hindi)"></textarea>
+          <label class="assistant-file-upload" for="assistant-file-input">
+            <span class="upload-icon">📎</span>
+            <span class="upload-text">Attach File</span>
+            <span id="assistant-file-name"></span>
+          </label>
+          <input type="file" id="assistant-file-input" accept=".txt,.pdf,.md,.docx,image/*,audio/*" onchange="updateAssistantFileName()" style="display:none;">
+        </div>
+        <button id="assistant-submit-btn" class="btn-primary w-100" onclick="sendAssistantRequest()">Send to AI Hub</button>
+        <div id="assistant-results-area" class="hidden">
+          <div id="assistant-thinking" class="thinking-indicator hidden">
+            <span>AI is thinking</span>
+            <div class="thinking-dots"><span></span><span></span><span></span></div>
+          </div>
+          <div id="assistant-steps" class="steps-container"></div>
+          <div id="assistant-error" class="assistant-error hidden"></div>
+          <div id="assistant-final" class="final-output-container hidden">
+            <h3>✨ Final Result</h3>
+            <div id="assistant-final-output"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Modal controls
     function openTextGenerator() {
@@ -315,6 +349,10 @@
 
     function openLanguageTranslator() {
       document.getElementById('language-translator-modal').classList.remove('hidden');
+    }
+
+    function openAssistant() {
+      document.getElementById('assistant-modal').classList.remove('hidden');
     }
 
     function closeModal(modalId) {
@@ -382,6 +420,22 @@
         document.getElementById('translate-btn').style.cursor = 'pointer';
         document.getElementById('translate-btn').style.opacity = '1';
         checkLanguages(); // Re-evaluate if identical based on current selections
+      }
+
+      // Reset assistant state when closing
+      if (modalId === 'assistant-modal') {
+        document.getElementById('assistant-text-input').value = '';
+        document.getElementById('assistant-file-input').value = '';
+        document.getElementById('assistant-file-name').innerText = '';
+        document.getElementById('assistant-steps').innerHTML = '';
+        document.getElementById('assistant-error').classList.add('hidden');
+        document.getElementById('assistant-error').innerHTML = '';
+        document.getElementById('assistant-final').classList.add('hidden');
+        document.getElementById('assistant-final-output').innerHTML = '';
+        document.getElementById('assistant-results-area').classList.add('hidden');
+        document.getElementById('assistant-thinking').classList.add('hidden');
+        document.getElementById('assistant-submit-btn').innerText = 'Send to AI Hub';
+        document.getElementById('assistant-submit-btn').disabled = false;
       }
     }
 
@@ -878,6 +932,200 @@
         outputArea.classList.remove('hidden');
       }
     }
+
+    // --- AI Assistant Logic ---
+    const TOOL_MAP = {
+      'generate': '📝',
+      'generate-code': '💻',
+      'summarize': '✂️',
+      'analyze-image': '🔍',
+      'recognize-speech': '🎙️',
+      'translate': '🌐'
+    };
+
+    const TOOL_NODE_INDEX = {
+      'generate': 1,
+      'summarize': 2,
+      'generate-code': 3,
+      'analyze-image': 4,
+      'recognize-speech': 5,
+      'translate': 6
+    };
+
+    function updateAssistantFileName() {
+      const input = document.getElementById('assistant-file-input');
+      const display = document.getElementById('assistant-file-name');
+      if (input.files && input.files.length > 0) {
+        display.innerText = input.files[0].name;
+      } else {
+        display.innerText = '';
+      }
+    }
+
+    function highlightTool(toolName) {
+      const cards = document.querySelectorAll('.tool-card');
+      const nodeIndex = TOOL_NODE_INDEX[toolName];
+      if (nodeIndex !== undefined && cards[nodeIndex]) {
+        const card = cards[nodeIndex];
+        card.classList.remove('highlighted');
+        void card.offsetWidth; // trigger reflow for re-animation
+        card.classList.add('highlighted');
+        setTimeout(() => card.classList.remove('highlighted'), 1500);
+      }
+    }
+
+    function formatOutput(text) {
+      if (!text) return '';
+      let html = text
+        .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      // Extract code blocks
+      const codeBlocks = [];
+      html = html.replace(/```(.*?)\n([\s\S]*?)```/g, function(match, lang, code) {
+        codeBlocks.push({ lang: lang.trim(), code: code });
+        return '___CODE_BLOCK_' + (codeBlocks.length - 1) + '___';
+      });
+
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\n\n/g, '<br><br>');
+      html = html.replace(/\n/g, '<br>');
+
+      // Restore code blocks
+      codeBlocks.forEach((block, index) => {
+        const preCode = '<pre><code class="language-' + (block.lang || 'text') + '">' + block.code + '</code></pre>';
+        html = html.replace('___CODE_BLOCK_' + index + '___', preCode);
+      });
+
+      return html;
+    }
+
+    function renderStepCard(step) {
+      const icon = TOOL_MAP[step.tool] || '⚙️';
+      const toolLabel = step.tool.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const formattedOutput = formatOutput(step.output);
+
+      const card = document.createElement('div');
+      card.className = 'step-card complete';
+      card.style.animationDelay = (step.step - 1) * 0.15 + 's';
+      card.innerHTML = `
+        <div class="step-number">${step.step}</div>
+        <div class="step-body">
+          <div class="step-tool-name">${icon} ${toolLabel}</div>
+          <div class="step-output">${formattedOutput}</div>
+        </div>
+      `;
+      return card;
+    }
+
+    async function sendAssistantRequest() {
+      const textInput = document.getElementById('assistant-text-input');
+      const btn = document.getElementById('assistant-submit-btn');
+      const resultsArea = document.getElementById('assistant-results-area');
+      const thinkingEl = document.getElementById('assistant-thinking');
+      const stepsEl = document.getElementById('assistant-steps');
+      const errorEl = document.getElementById('assistant-error');
+      const finalEl = document.getElementById('assistant-final');
+      const finalOutput = document.getElementById('assistant-final-output');
+
+      const message = textInput.value.trim();
+      if (!message) {
+        alert('Please enter a message for the AI Hub.');
+        return;
+      }
+
+      // Reset & show loading
+      btn.innerText = 'Processing...';
+      btn.disabled = true;
+      stepsEl.innerHTML = '';
+      errorEl.classList.add('hidden');
+      errorEl.innerHTML = '';
+      finalEl.classList.add('hidden');
+      finalOutput.innerHTML = '';
+      resultsArea.classList.remove('hidden');
+      thinkingEl.classList.remove('hidden');
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        const response = await fetch('http://localhost:8000/api/assistant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: message }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        thinkingEl.classList.add('hidden');
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.detail || 'Server error occurred');
+        }
+
+        const data = await response.json();
+
+        // Handle error responses from assistant
+        if (data.error) {
+          errorEl.innerHTML = '<strong>⚠️ Error:</strong> ' + data.error;
+          if (data.details) errorEl.innerHTML += '<br>' + data.details;
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        // Render step cards
+        if (data.steps && data.steps.length > 0) {
+          data.steps.forEach((step, i) => {
+            setTimeout(() => {
+              const card = renderStepCard(step);
+              stepsEl.appendChild(card);
+              highlightTool(step.tool);
+
+              // Trigger Prism on code blocks inside step
+              if (window.Prism) {
+                Prism.highlightAllUnder(card);
+              }
+            }, i * 300);
+          });
+
+          // Show final output after all steps animate
+          setTimeout(() => {
+            if (data.final_output) {
+              finalOutput.innerHTML = formatOutput(data.final_output);
+              finalEl.classList.remove('hidden');
+              if (window.Prism) {
+                Prism.highlightAllUnder(finalOutput);
+              }
+            }
+          }, data.steps.length * 300 + 200);
+        }
+
+      } catch (error) {
+        thinkingEl.classList.add('hidden');
+        if (error.name === 'AbortError') {
+          errorEl.innerHTML = '<strong>⏱️ Timeout:</strong> The request took too long. Please try again.';
+        } else {
+          errorEl.innerHTML = '<strong>⚠️ Error:</strong> Failed to connect to AI Hub backend.<br>Details: ' + error.message;
+        }
+        errorEl.classList.remove('hidden');
+      } finally {
+        btn.innerText = 'Send to AI Hub';
+        btn.disabled = false;
+      }
+    }
+
+    // Allow Enter key to submit (Shift+Enter for newline)
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('assistant-text-input');
+      if (input) {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendAssistantRequest();
+          }
+        });
+      }
+    });
   </script>
   <!-- Prism.js Syntax Highlighting JS + Common Languages -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
