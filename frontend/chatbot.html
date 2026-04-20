@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI HUB - Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Prism.js Syntax Highlighting CSS (Tomorrow Night Theme) -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="hub-wrapper">
+    <div class="hub">
+
+      <!-- Nodes Array -->
+
+      <!-- 1. AI Assist Chatbot -->
+      <div class="node-positioner" style="transform: rotate(0deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(0deg);">
+          <div class="counter-spin">
+            <div class="tool-card">
+              <div class="tool-icon">💬</div>
+              <div class="tool-name">AI Assist Chatbot</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Text Generator -->
+      <div class="node-positioner" style="transform: rotate(45deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-45deg);">
+          <div class="counter-spin">
+            <div class="tool-card" onclick="openTextGenerator()">
+              <div class="tool-icon">📝</div>
+              <div class="tool-name">Text Generator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. AI Summarizer -->
+      <div class="node-positioner" style="transform: rotate(90deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-90deg);">
+          <div class="counter-spin">
+            <div class="tool-card" onclick="openSummarizer()">
+              <div class="tool-icon">✂️</div>
+              <div class="tool-name">AI Summarizer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Code Generator -->
+      <div class="node-positioner" style="transform: rotate(135deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-135deg);">
+          <div class="counter-spin">
+            <div class="tool-card" onclick="openCodeGenerator()">
+              <div class="tool-icon">💻</div>
+              <div class="tool-name">Code Generator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Image Analyzer -->
+      <div class="node-positioner" style="transform: rotate(180deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-180deg);">
+          <div class="counter-spin">
+            <div class="tool-card" onclick="openImageAnalyzer()">
+              <div class="tool-icon">🔍</div>
+              <div class="tool-name">Image Analyzer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Speech Recognition -->
+      <div class="node-positioner" style="transform: rotate(225deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-225deg);">
+          <div class="counter-spin">
+            <div class="tool-card" onclick="openSpeechRecognition()">
+              <div class="tool-icon">🎙️</div>
+              <div class="tool-name">Speech Recognition</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Language Translator -->
+      <div class="node-positioner" style="transform: rotate(270deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-270deg);">
+          <div class="counter-spin">
+            <div class="tool-card" onclick="openLanguageTranslator()">
+              <div class="tool-icon">🌐</div>
+              <div class="tool-name">Language Translator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. User Messenger -->
+      <div class="node-positioner" style="transform: rotate(315deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-315deg);">
+          <div class="counter-spin">
+            <div class="tool-card">
+              <div class="tool-icon">👤</div>
+              <div class="tool-name">User Messenger</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Static Center Core (Extracted from rotating hub) -->
+    <div class="center-core">
+      <h2>AI HUB</h2>
+    </div>
+  </div>
+
+  <!-- Text Generator Modal -->
+  <div id="text-generator-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2>📝 AI Text Generator</h2>
+        <button class="close-btn" onclick="closeModal('text-generator-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="prompt-input"
+          placeholder="Enter your prompt here... (e.g. Write a short poem about the future of AI)"></textarea>
+        <button id="generate-btn" class="btn-primary w-100" onclick="generateText()">Generate Text</button>
+        <div id="output-area" class="hidden">
+          <h3 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--accent);">Generated Output:</h3>
+          <p id="generated-text"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Summarizer Modal -->
+  <div id="summarizer-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2>✂️ AI Document Summarizer</h2>
+        <button class="close-btn" onclick="closeModal('summarizer-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="file-upload-container">
+          <label for="document-upload" class="file-upload-label">
+            <i class="upload-icon">📄</i> Choose a File (.txt, .md, .pdf, .docx)
+          </label>
+          <input type="file" id="document-upload" accept=".txt,.pdf,.md,.docx" onchange="updateFileName()">
+          <div id="file-name-display" class="file-name-display">No file chosen</div>
+        </div>
+        <button id="summarize-btn" class="btn-primary w-100" onclick="summarizeDocument()">Summarize Document</button>
+        <div id="summarize-output-area" class="hidden">
+          <h3 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--accent);">Generated Summary:</h3>
+          <p id="summarized-text"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Generator Modal -->
+  <div id="code-generator-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2>💻 AI Code Generator</h2>
+        <button class="close-btn" onclick="closeModal('code-generator-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="code-prompt-input"
+          placeholder="Describe the code you want to generate... (e.g. Write a Python function to calculate the Fibonacci sequence)"></textarea>
+        <button id="generate-code-btn" class="btn-primary w-100" onclick="generateCode()">Generate Code</button>
+        <div id="code-output-area" class="hidden">
+          <h3 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--accent);">Generated Code:</h3>
+          <div id="code-text"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Image Analyzer Modal -->
+  <div id="image-analyzer-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2>🔍 Image Analyzer</h2>
+        <button class="close-btn" onclick="closeModal('image-analyzer-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="file-upload-container">
+          <label for="image-upload" class="file-upload-label">
+            <i class="upload-icon">🖼️</i> Choose an Image (.jpg, .png)
+          </label>
+          <input type="file" id="image-upload" accept="image/*" onchange="previewImage()">
+
+          <!-- Image Preview Area -->
+          <div id="image-preview-container" class="hidden" style="margin-top: 1rem; width: 100%; text-align: center;">
+            <img id="image-preview" src="" alt="Image Preview"
+              style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid var(--accent); box-shadow: 0 0 10px rgba(56,189,248,0.2);">
+            <div id="image-name-display" class="file-name-display" style="margin-top: 0.5rem;"></div>
+          </div>
+
+        </div>
+        <button id="analyze-image-btn" class="btn-primary w-100" onclick="analyzeImage()" disabled>Analyze
+          Image</button>
+        <div id="image-output-area" class="hidden">
+          <h3 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--accent);">Analysis Result:</h3>
+          <p id="image-analysis-text"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Language Translator Modal -->
+  <div id="language-translator-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <h2>🌐 Language Translator</h2>
+        <button class="close-btn" onclick="closeModal('language-translator-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+          <div style="flex: 1;">
+            <label for="source-language" style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Source Language:</label>
+            <select id="source-language" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.4); color: var(--text-main); outline: none; transition: border-color 0.3s;" onchange="checkLanguages()">
+              <option value="English">English</option>
+              <option value="Kannada">Kannada</option>
+              <option value="Hindi">Hindi</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label for="target-language" style="display: block; margin-bottom: 0.5rem; color: var(--text-muted);">Target Language:</label>
+            <select id="target-language" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.4); color: var(--text-main); outline: none; transition: border-color 0.3s;" onchange="checkLanguages()">
+              <option value="Hindi" selected>Hindi</option>
+              <option value="English">English</option>
+              <option value="Kannada">Kannada</option>
+            </select>
+          </div>
+        </div>
+        
+        <textarea id="translator-input" placeholder="Enter text to translate..." style="width: 100%; height: 120px; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem; color: var(--text-main); font-size: 1rem; resize: vertical; margin-bottom: 1rem; outline: none; transition: border-color 0.3s, box-shadow 0.3s;"></textarea>
+        
+        <button id="translate-btn" class="btn-primary w-100" onclick="translateText()">Translate Text</button>
+        
+        <div id="translator-output-area" class="hidden" style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 12px; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);">
+          <h3 style="margin-bottom: 0.5rem; font-size: 1rem; color: var(--accent);">Translation:</h3>
+          <p id="translated-text" style="color: #e2e8f0; line-height: 1.6; font-size: 0.95rem; white-space: pre-wrap; overflow-wrap: break-word;"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Speech Recognition Modal -->
+  <div id="speech-recognition-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card" style="text-align: center;">
+      <div class="modal-header" style="text-align: left;">
+        <h2>🎙️ Speech Recognition</h2>
+        <button class="close-btn" onclick="closeModal('speech-recognition-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">Click the microphone to start recording your voice.
+        </p>
+
+        <div class="mic-button-container">
+          <button id="mic-button" class="mic-button" onclick="toggleRecording()">
+            🎙️
+          </button>
+        </div>
+
+        <p id="recording-status" style="color: var(--text-muted); min-height: 1.5rem; margin-bottom: 1rem;">Ready to
+          record</p>
+
+        <!-- Live Terminal -->
+        <div id="live-terminal" class="terminal-container hidden">
+          <div class="terminal-header">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+            <span class="terminal-title">live-transcription ~/audio</span>
+          </div>
+          <div class="terminal-body" id="terminal-body">
+            <span id="speech-analysis-text"></span><span class="blinking-cursor">_</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal controls
+    function openTextGenerator() {
+      document.getElementById('text-generator-modal').classList.remove('hidden');
+    }
+
+    function openSummarizer() {
+      document.getElementById('summarizer-modal').classList.remove('hidden');
+    }
+
+    function openCodeGenerator() {
+      document.getElementById('code-generator-modal').classList.remove('hidden');
+    }
+
+    function openImageAnalyzer() {
+      document.getElementById('image-analyzer-modal').classList.remove('hidden');
+    }
+
+    function openSpeechRecognition() {
+      document.getElementById('speech-recognition-modal').classList.remove('hidden');
+    }
+
+    function openLanguageTranslator() {
+      document.getElementById('language-translator-modal').classList.remove('hidden');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+
+      // Reset text generator state when closing
+      if (modalId === 'text-generator-modal') {
+        document.getElementById('prompt-input').value = '';
+        document.getElementById('output-area').classList.add('hidden');
+        document.getElementById('generated-text').innerText = '';
+        document.getElementById('generate-btn').innerText = 'Generate Text';
+        document.getElementById('generate-btn').disabled = false;
+      }
+
+      // Reset summarizer state when closing
+      if (modalId === 'summarizer-modal') {
+        document.getElementById('document-upload').value = '';
+        document.getElementById('file-name-display').innerText = 'No file chosen';
+        document.getElementById('summarize-output-area').classList.add('hidden');
+        document.getElementById('summarized-text').innerText = '';
+        document.getElementById('summarize-btn').innerText = 'Summarize Document';
+        document.getElementById('summarize-btn').disabled = false;
+      }
+
+      // Reset code generator state when closing
+      if (modalId === 'code-generator-modal') {
+        document.getElementById('code-prompt-input').value = '';
+        document.getElementById('code-output-area').classList.add('hidden');
+        document.getElementById('code-text').innerHTML = '';
+        document.getElementById('generate-code-btn').innerText = 'Generate Code';
+        document.getElementById('generate-code-btn').disabled = false;
+      }
+
+      // Reset image analyzer state when closing
+      if (modalId === 'image-analyzer-modal') {
+        document.getElementById('image-upload').value = '';
+        document.getElementById('image-preview-container').classList.add('hidden');
+        document.getElementById('image-preview').src = '';
+        document.getElementById('image-name-display').innerText = '';
+        document.getElementById('image-output-area').classList.add('hidden');
+        document.getElementById('image-analysis-text').innerHTML = '';
+        document.getElementById('analyze-image-btn').innerText = 'Analyze Image';
+        document.getElementById('analyze-image-btn').disabled = true;
+      }
+
+      // Reset speech recognition state when closing
+      if (modalId === 'speech-recognition-modal') {
+        if (typeof recognition !== 'undefined' && isRecording) {
+          isRecording = false;
+          recognition.stop();
+        }
+        document.getElementById('mic-button').classList.remove('recording-pulse');
+        document.getElementById('recording-status').innerText = 'Ready to record';
+        document.getElementById('live-terminal').classList.add('hidden');
+        document.getElementById('speech-analysis-text').innerHTML = '';
+      }
+
+      // Reset language translator state when closing
+      if (modalId === 'language-translator-modal') {
+        document.getElementById('translator-input').value = '';
+        document.getElementById('translator-output-area').classList.add('hidden');
+        document.getElementById('translated-text').innerHTML = '';
+        document.getElementById('translate-btn').innerText = 'Translate Text';
+        document.getElementById('translate-btn').disabled = false;
+        document.getElementById('translate-btn').style.cursor = 'pointer';
+        document.getElementById('translate-btn').style.opacity = '1';
+        checkLanguages(); // Re-evaluate if identical based on current selections
+      }
+    }
+
+    // File input UX
+    function updateFileName() {
+      const input = document.getElementById('document-upload');
+      const display = document.getElementById('file-name-display');
+      if (input.files && input.files.length > 0) {
+        display.innerText = "Selected: " + input.files[0].name;
+        display.style.color = "#38bdf8";
+      } else {
+        display.innerText = "No file chosen";
+        display.style.color = "var(--text-muted)";
+      }
+    }
+
+    function previewImage() {
+      const input = document.getElementById('image-upload');
+      const previewContainer = document.getElementById('image-preview-container');
+      const previewImg = document.getElementById('image-preview');
+      const nameDisplay = document.getElementById('image-name-display');
+      const analyzeBtn = document.getElementById('analyze-image-btn');
+
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+
+        // Limit file size (e.g. 5MB) since large images slow down processing
+        if (file.size > 5 * 1024 * 1024) {
+          alert("Image is too large. Please upload an image under 5MB.");
+          input.value = "";
+          return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          previewImg.src = e.target.result;
+          nameDisplay.innerText = file.name;
+          previewContainer.classList.remove('hidden');
+          analyzeBtn.disabled = false; // Enable button once image is loaded
+        }
+
+        reader.readAsDataURL(file);
+      } else {
+        previewContainer.classList.add('hidden');
+        analyzeBtn.disabled = true;
+      }
+    }
+
+    // Connected to Python FastAPI Backend 
+    async function generateText() {
+      const prompt = document.getElementById('prompt-input').value;
+      const btn = document.getElementById('generate-btn');
+      const outputArea = document.getElementById('output-area');
+      const outputText = document.getElementById('generated-text');
+
+      if (!prompt.trim()) {
+        alert("Please enter a prompt first.");
+        return;
+      }
+
+      // Add loading state
+      btn.innerText = 'Generating...';
+      btn.disabled = true;
+      outputArea.classList.add('hidden');
+
+      try {
+        // Fetch to local FastAPI server
+        const response = await fetch('http://localhost:8000/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: prompt })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Network error occurred');
+        }
+
+        const data = await response.json();
+
+        if (data.status === "success" && data.response) {
+          // Apply simple formatting to the markdown-like response
+          let formattedResponse = data.response
+            .replace(/\n\n/g, '<br><br>') // Paragraphs
+            .replace(/\n/g, '<br>') // Line breaks
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Basic bolding
+
+          outputText.innerHTML = formattedResponse;
+        } else {
+          throw new Error('Invalid response structure from server');
+        }
+      } catch (error) {
+        outputText.innerHTML = `<span style="color: #ef4444;"><strong>Error:</strong> Failed to connect to backend server. Make sure the FastAPI server is running on localhost:8000.\n\nDetails: ${error.message}</span>`;
+      } finally {
+        // Reset UI state
+        btn.innerText = 'Generate Text';
+        btn.disabled = false;
+        outputArea.classList.remove('hidden');
+      }
+    }
+
+    // Connected to Python FastAPI Backend (/api/generate-code)
+    async function generateCode() {
+      const prompt = document.getElementById('code-prompt-input').value;
+      const btn = document.getElementById('generate-code-btn');
+      const outputArea = document.getElementById('code-output-area');
+      const outputText = document.getElementById('code-text');
+
+      if (!prompt.trim()) {
+        alert("Please enter a prompt first.");
+        return;
+      }
+
+      // Add loading state
+      btn.innerText = 'Generating Code...';
+      btn.disabled = true;
+      outputArea.classList.add('hidden');
+
+      try {
+        const response = await fetch('http://localhost:8000/api/generate-code', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: prompt })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Network error occurred');
+        }
+
+        const data = await response.json();
+
+        if (data.status === "success" && data.response) {
+          // Very simple Markdown parser for code blocks
+          let htmlContent = data.response;
+          // Escape HTML tags to prevent injection and rendering issues mapping
+          htmlContent = htmlContent.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+          // Extract code blocks first to protect their newlines
+          const codeBlocks = [];
+          htmlContent = htmlContent.replace(/```(.*?)\n([\s\S]*?)```/g, function (match, lang, code) {
+            codeBlocks.push({ lang: lang.trim(), code: code });
+            return "___CODE_BLOCK_" + (codeBlocks.length - 1) + "___";
+          });
+
+          // Replace inline code `code` -> <code>code</code>
+          htmlContent = htmlContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+          // Basic paragraphs
+          htmlContent = htmlContent.replace(/\n\n/g, '</p><p>');
+          // Line breaks
+          htmlContent = htmlContent.replace(/\n/g, '<br>');
+
+          // Restore code blocks with protected newlines
+          codeBlocks.forEach((block, index) => {
+            const preCode = '<pre><code class="language-' + block.lang + '">' + block.code + '</code></pre>';
+            htmlContent = htmlContent.replace("___CODE_BLOCK_" + index + "___", '</p>' + preCode + '<p>');
+          });
+
+          htmlContent = '<p>' + htmlContent + '</p>';
+          // Clean up empty paragraphs
+          htmlContent = htmlContent.replace(/<p><\/p>/g, '');
+
+          outputText.innerHTML = htmlContent;
+
+          // Trigger Prism.js to highlight the newly injected <code> blocks
+          if (window.Prism) {
+            Prism.highlightAllUnder(outputText);
+          }
+        } else {
+          throw new Error('Invalid response structure from server');
+        }
+      } catch (error) {
+        outputText.innerHTML = `<span style="color: #ef4444;"><strong>Error:</strong> Failed to connect to backend server.\n\nDetails: ${error.message}</span>`;
+      } finally {
+        btn.innerText = 'Generate Code';
+        btn.disabled = false;
+        outputArea.classList.remove('hidden');
+      }
+    }
+
+    // Connected to Python FastAPI Backend (/api/summarize)
+    async function summarizeDocument() {
+      const fileInput = document.getElementById('document-upload');
+      const btn = document.getElementById('summarize-btn');
+      const outputArea = document.getElementById('summarize-output-area');
+      const outputText = document.getElementById('summarized-text');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert("Please select a file to summarize.");
+        return;
+      }
+
+      const file = fileInput.files[0];
+
+      // Prepare multipart form data
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Add loading state
+      btn.innerText = 'Extracting and Summarizing...';
+      btn.disabled = true;
+      outputArea.classList.add('hidden');
+
+      try {
+        const response = await fetch('http://localhost:8000/api/summarize', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Network error occurred');
+        }
+
+        const data = await response.json();
+
+        if (data.status === "success" && data.response) {
+          // Apply simple formatting to the markdown-like response
+          let formattedResponse = data.response
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bolding
+            .replace(/\n\n/g, '<br><br>') // Paragraphs
+            .replace(/\n\*\s(.*)/g, '<br>• $1') // Lists
+            .replace(/\n/g, '<br>'); // generic line breaks
+
+          outputText.innerHTML = `<em>Summary of ${data.filename}:</em><br><br>${formattedResponse}`;
+        } else {
+          throw new Error('Invalid response structure from server');
+        }
+      } catch (error) {
+        console.error("Analysis Error:", error);
+        outputText.innerHTML = `<span style="color: #ef4444;"><strong>Error:</strong> Failed to summarize document.\n\nDetails: ${error.message}</span>`;
+      } finally {
+        // Restore UI state
+        btn.innerText = 'Summarize Document';
+        btn.disabled = false;
+        outputArea.classList.remove('hidden');
+      }
+    }
+
+    // Connected to Python FastAPI Backend (/api/analyze-image)
+    async function analyzeImage() {
+      const fileInput = document.getElementById('image-upload');
+      const btn = document.getElementById('analyze-image-btn');
+      const outputArea = document.getElementById('image-output-area');
+      const outputText = document.getElementById('image-analysis-text');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert("Please select an image to analyze.");
+        return;
+      }
+
+      const file = fileInput.files[0];
+
+      // Prepare multipart form data
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Add loading state
+      btn.innerText = 'Analyzing Visuals...';
+      btn.disabled = true;
+      outputArea.classList.add('hidden');
+
+      try {
+        const response = await fetch('http://localhost:8000/api/analyze-image', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Network error occurred');
+        }
+
+        const data = await response.json();
+
+        if (data.status === "success" && data.response) {
+          // Apply simple formatting to the markdown-like response
+          let formattedResponse = data.response
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bolding
+            .replace(/\n\*\s(.*)/g, '<br>• $1') // Lists
+            .replace(/\n\n/g, '<br><br>') // Paragraphs
+            .replace(/\n/g, '<br>'); // generic line breaks
+
+          outputText.innerHTML = formattedResponse;
+        } else {
+          throw new Error('Invalid response structure from server');
+        }
+      } catch (error) {
+        console.error("Vision Analysis Error:", error);
+        outputText.innerHTML = `<span style="color: #ef4444;"><strong>Error:</strong> Failed to analyze image.\n\nDetails: ${error.message}</span>`;
+      } finally {
+        // Restore UI state
+        btn.innerText = 'Analyze Image';
+        btn.disabled = false;
+        outputArea.classList.remove('hidden');
+      }
+    }
+
+    // --- Speech Recognition Logic ---
+    let recognition;
+    let isRecording = false;
+    let fullTranscript = '';
+
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = function() {
+        document.getElementById('recording-status').innerText = 'Recording... Speak now.';
+        document.getElementById('mic-button').classList.add('recording-pulse');
+        document.getElementById('live-terminal').classList.remove('hidden');
+        document.getElementById('speech-analysis-text').innerHTML = '';
+        fullTranscript = '';
+        autoScrollTerminal();
+      };
+
+      recognition.onerror = function(event) {
+        console.error("Speech recognition error", event.error);
+        if(event.error === 'not-allowed') {
+          document.getElementById('recording-status').innerText = "Error: Please allow microphone access permissions in your browser.";
+          document.getElementById('recording-status').style.color = "#ef4444";
+        } else if (event.error === 'no-speech') {
+          // 'no-speech' can fire when silent. The onend handler will restart it.
+        }
+      };
+
+      recognition.onend = function() {
+        if (isRecording) {
+            // Auto-restart if silent and continues but user hasn't toggled off.
+            // A slight delay prevents runaway loops.
+            setTimeout(() => {
+                if (isRecording) {
+                    try { recognition.start(); } catch(e) {}
+                }
+            }, 100);
+        } else {
+            document.getElementById('recording-status').innerText = 'Ready to record';
+            document.getElementById('mic-button').classList.remove('recording-pulse');
+            
+            // Release the manual audio stream if we acquired one
+            if (window.localStream) {
+                window.localStream.getTracks().forEach(track => track.stop());
+                window.localStream = null;
+            }
+        }
+      };
+
+      recognition.onresult = function(event) {
+        let interimTranscript = '';
+        let finalTranscriptForThisEvent = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscriptForThisEvent += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        
+        if (finalTranscriptForThisEvent) {
+          fullTranscript += finalTranscriptForThisEvent;
+        }
+
+        let displayText = fullTranscript;
+        if (interimTranscript) {
+           displayText += '<i style="color: #64748b;">' + interimTranscript + '</i>';
+        }
+
+        document.getElementById('speech-analysis-text').innerHTML = displayText;
+        autoScrollTerminal();
+      };
+    } else {
+      console.warn("Speech Recognition API not supported in this browser.");
+    }
+
+    async function toggleRecording() {
+      if (!recognition) {
+        alert("Your browser does not support Speech Recognition. Please use Chrome or Edge.");
+        return;
+      }
+
+      const micButton = document.getElementById('mic-button');
+
+      if (!isRecording) {
+        // Request microphone access explicitly to wake up the correct default recording device.
+        // This mitigates the common 'no-speech' bug on Windows Chrome.
+        try {
+            window.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+            console.error("Microphone access denied or unavailable", err);
+            document.getElementById('recording-status').innerText = "Error: Microphone access denied.";
+            document.getElementById('recording-status').style.color = "#ef4444";
+            return;
+        }
+
+        // START RECORDING
+        isRecording = true;
+        try {
+            recognition.start();
+        } catch(e) {
+            console.error("Recognition already started", e);
+        }
+      } else {
+        // STOP RECORDING
+        isRecording = false; // setting this to false prevents auto-restart in onend
+        recognition.stop();
+        document.getElementById('recording-status').innerText = 'Process Finished';
+      }
+    }
+    
+    function autoScrollTerminal() {
+       const terminalBody = document.getElementById('terminal-body');
+       if (terminalBody) {
+         terminalBody.scrollTop = terminalBody.scrollHeight;
+       }
+    }
+
+    // --- Language Translator Logic ---
+    function checkLanguages() {
+      const sourceLang = document.getElementById('source-language').value;
+      const targetLang = document.getElementById('target-language').value;
+      const btn = document.getElementById('translate-btn');
+      
+      if (sourceLang === targetLang) {
+        btn.disabled = true;
+        btn.style.cursor = 'not-allowed';
+        btn.title = "Source and Target languages cannot be the same";
+        btn.style.opacity = '0.5';
+      } else {
+        btn.disabled = false;
+        btn.style.cursor = 'pointer';
+        btn.title = "";
+        btn.style.opacity = '1';
+      }
+    }
+
+    // Connected to Python FastAPI Backend (/api/translate)
+    async function translateText() {
+      const textInput = document.getElementById('translator-input').value;
+      const sourceLang = document.getElementById('source-language').value;
+      const targetLang = document.getElementById('target-language').value;
+      const btn = document.getElementById('translate-btn');
+      const outputArea = document.getElementById('translator-output-area');
+      const outputText = document.getElementById('translated-text');
+
+      if (!textInput.trim()) {
+        alert("Please enter text to translate.");
+        return;
+      }
+
+      // Add loading state
+      btn.innerText = 'Translating...';
+      btn.disabled = true;
+      outputArea.classList.add('hidden');
+
+      try {
+        const response = await fetch('http://localhost:8000/api/translate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            text: textInput,
+            source_language: sourceLang,
+            target_language: targetLang
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Network error occurred');
+        }
+
+        const data = await response.json();
+
+        if (data.status === "success" && data.response) {
+          outputText.innerText = data.response.trim();
+        } else {
+          throw new Error('Invalid response structure from server');
+        }
+      } catch (error) {
+        outputText.innerHTML = `<span style="color: #ef4444;"><strong>Error:</strong> Failed to connect to backend server.\n\nDetails: ${error.message}</span>`;
+      } finally {
+        // Reset UI state
+        btn.innerText = 'Translate Text';
+        checkLanguages(); // re-evaluates if button should be disabled
+        outputArea.classList.remove('hidden');
+      }
+    }
+  </script>
+  <!-- Prism.js Syntax Highlighting JS + Common Languages -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+</body>
+
+</html>
