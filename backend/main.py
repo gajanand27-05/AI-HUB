@@ -472,6 +472,66 @@ def execute_tool(tool: str, user_input: str):
         raise HTTPException(status_code=400, detail="Invalid tool")
 
 # =========================
+# MULTI-STEP EXECUTION ENGINE
+# =========================
+
+def combine_results(steps):
+    combined = []
+    for step in steps:
+        tool_name = step['tool'].replace("-", " ").title()
+        combined.append(f"{tool_name}:\n{step['output']}")
+    return "\n\n".join(combined)
+
+def execute_tasks(tasks, user_input):
+    context = {}
+    steps_out = []
+    previous_output = ""
+    
+    for idx, task in enumerate(tasks, 1):
+        tool = task["tool"].lower().strip().replace("_", "-")
+        input_type = task.get("input", "text")
+        
+        logger.info(f"Executing step {idx}: [{tool}] with input type [{input_type}]")
+        
+        # Guard rails
+        if input_type == "file":
+             return "error", None, {"error": "Missing file input. Please upload a file via Phase 2 inputs."}
+             
+        elif input_type == "previous_output":
+             if not previous_output:
+                 return "error", None, {"error": "Invalid task sequence: previous_output requested before any task completed"}
+             active_input = previous_output
+             
+        else: # "text"
+             active_input = user_input
+             
+        # Execute tool with exactly 1 retry (max_retries = 2 loop)
+        max_retries = 2
+        result = None
+        for attempt in range(max_retries):
+            try:
+                result = execute_tool(tool, active_input)
+                break
+            except Exception as e:
+                logger.error(f"Execution failed on attempt {attempt+1} for {tool}: {str(e)}")
+                if attempt == max_retries - 1:
+                     return "error", None, {"error": "Could not process request", "details": f"API failure in {tool}: {str(e)}"}
+                     
+        # Save state
+        key_name = f"step{idx}_output"
+        context[key_name] = result
+        previous_output = result
+        
+        steps_out.append({
+            "tool": tool,
+            "output": result
+        })
+        
+    final_combined = combine_results(steps_out)
+    return "success", steps_out, final_combined
+
+
+# =========================
 # MAIN ASSISTANT ENDPOINT
 # =========================
 
@@ -492,6 +552,7 @@ def assistant_handler(request: AssistantRequest):
         "generate", "generate-code", "summarize",
         "analyze-image", "recognize-speech", "translate"
     ]
+    required_keys = ["tool", "input"]
 
     for t in intent_data["tasks"]:
         if t.get("tool") not in valid_tools:
@@ -499,35 +560,24 @@ def assistant_handler(request: AssistantRequest):
                 "error": "Could not process request",
                 "details": f"Invalid task format: unknown tool detected '{t.get('tool')}'"
             }
+        for key in required_keys:
+            if key not in t:
+                return {
+                    "error": "Could not process request",
+                    "details": f"Missing key: {key}"
+                }
 
-    task = intent_data["tasks"][0]
+    # Step 2: Pass validated sequence to execution context engine
+    status, steps_out, final_combined = execute_tasks(intent_data["tasks"], user_input)
     
-    required_keys = ["tool", "input"]
-    for key in required_keys:
-        if key not in task:
-            return {
-                "error": "Could not process request",
-                "details": f"Missing key: {key}"
-            }
-        
-    tool = task["tool"].lower().strip().replace("_", "-")
-    
-    logger.info(f"Detected tool: {tool}")
-    logger.info(f"Input type: {task.get('input')}")
+    if status == "error":
+        # Map the specific error returned natively
+        return final_combined # since it returned the actual error dict
 
-    # Step 2: Execute tool
-    try:
-        result = execute_tool(tool, user_input)
-    except Exception as e:
-        return {
-            "error": "Could not process request",
-            "details": str(e)
-        }
-
-    # Step 3: Return response
+    # Step 3: Return dynamically combined response
     return {
-        "tool_used": tool,
-        "result": result
+        "steps": steps_out,
+        "final_result": final_combined
     }
 
 if __name__ == "__main__":
