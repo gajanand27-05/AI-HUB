@@ -270,7 +270,7 @@ RULES:
   }
 
 * If multiple actions are requested, split into multiple tasks in correct order. Tasks must be ordered logically based on dependency. Example: speech -> text -> summarize (NOT reverse)
-* Use "previous_output" when a task depends on the result of a previous task
+* Use "previous_output" when a task depends on the result of a previous task. If output of one task is required for another, ALWAYS use "previous_output". Example: Explain this image and translate to Hindi -> analyze-image (file) -> translate (previous_output)
 * Use "file" ONLY if user explicitly mentions upload, image, audio, or document
 * Otherwise always use "text"
 * You MUST only use tools from this exact list:
