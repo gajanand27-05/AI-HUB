@@ -452,18 +452,18 @@ def translate_text(prompt: str):
 # TOOL ROUTER
 # =========================
 
-def execute_tool(tool: str, user_input: str):
+def execute_tool(tool: str, input_data: str):
     if tool == "generate":
-        return generate_text(user_input)
+        return generate_text(input_data)
 
     elif tool == "generate-code":
-        return generate_code(user_input)
+        return generate_code(input_data)
 
     elif tool == "summarize":
-        return summarize_text(user_input)
+        return summarize_text(input_data)
 
     elif tool == "translate":
-        return translate_text(user_input)
+        return translate_text(input_data)
 
     elif tool in ["analyze-image", "recognize-speech"]:
         return "This tool requires file input (Phase 2)"
