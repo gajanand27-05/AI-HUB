@@ -391,7 +391,13 @@ def detect_intent(user_input: str):
 
         # Try parsing JSON
         try:
-            cleaned = text.strip().removeprefix('```json').removesuffix('```').strip()
+            # Safely extract JSON even if hidden behind conversational text
+            start_idx = text.find('{')
+            end_idx = text.rfind('}')
+            if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                cleaned = text[start_idx:end_idx+1]
+            else:
+                cleaned = text.strip().removeprefix('```json').removesuffix('```').strip()
             data = json.loads(cleaned)
             return data
         except:
@@ -401,8 +407,14 @@ def detect_intent(user_input: str):
                 model='gemini-2.5-flash',
                 contents=retry_prompt
             )
-            retry_text = response.text.strip().removeprefix('```json').removesuffix('```').strip()
-            return json.loads(retry_text)
+            retry_text = response.text.strip()
+            start_idx = retry_text.find('{')
+            end_idx = retry_text.rfind('}')
+            if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                cleaned_retry = retry_text[start_idx:end_idx+1]
+            else:
+                cleaned_retry = retry_text.removeprefix('```json').removesuffix('```').strip()
+            return json.loads(cleaned_retry)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Intent detection failed: {str(e)}")
@@ -487,12 +499,12 @@ def assistant_handler(request: AssistantRequest):
             raise HTTPException(status_code=400, detail="Invalid tool detected")
 
     task = intent_data["tasks"][0]
-    tool = task.get("tool")
-
-    if not tool:
-        return {
-            "error": "Invalid task structure"
-        }
+    
+    if "tool" not in task:
+        raise HTTPException(status_code=400, detail="Invalid task format")
+        
+    tool = task["tool"]
+    print("Input type:", task.get("input"))
 
     # Step 2: Execute tool
     try:
