@@ -253,7 +253,7 @@ AVAILABLE TOOLS:
 3. "summarize" -> for summarizing documents or long text
 4. "analyze-image" -> for describing or analyzing images
 5. "recognize-speech" -> for converting audio to text
-6. "translate" -> for language translation
+6. "translate" -> for language translation (Always include target language in description. Detect language automatically if not specified)
 
 ---
 RULES:
