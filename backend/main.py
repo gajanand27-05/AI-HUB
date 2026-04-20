@@ -271,8 +271,8 @@ RULES:
 
 * If multiple actions are requested, split into multiple tasks in correct order. Tasks must be ordered logically based on dependency. Example: speech -> text -> summarize (NOT reverse)
 * Use "previous_output" when a task depends on the result of a previous task
-* If the user provides a file (PDF, image, audio), use "file" as input
-* If the input is plain text, use "text"
+* Use "file" ONLY if user explicitly mentions upload, image, audio, or document
+* Otherwise always use "text"
 * You MUST only use tools from this exact list:
   ["generate", "generate-code", "summarize", "analyze-image", "recognize-speech", "translate"]
 * If a request does not match any tool, return error JSON.
