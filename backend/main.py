@@ -477,6 +477,15 @@ def assistant_handler(request: AssistantRequest):
             "error": "Please clarify your request"
         }
 
+    valid_tools = [
+        "generate", "generate-code", "summarize",
+        "analyze-image", "recognize-speech", "translate"
+    ]
+
+    for t in intent_data["tasks"]:
+        if t.get("tool") not in valid_tools:
+            raise HTTPException(status_code=400, detail="Invalid tool detected")
+
     task = intent_data["tasks"][0]
     tool = task.get("tool")
 
