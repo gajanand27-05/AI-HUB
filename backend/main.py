@@ -273,6 +273,9 @@ RULES:
 * Use "previous_output" when a task depends on the result of a previous task
 * If the user provides a file (PDF, image, audio), use "file" as input
 * If the input is plain text, use "text"
+* You MUST only use tools from this exact list:
+  ["generate", "generate-code", "summarize", "analyze-image", "recognize-speech", "translate"]
+* If a request does not match any tool, return error JSON.
 
 ---
 EDGE CASE HANDLING:
@@ -363,6 +366,12 @@ Now analyze the following user input and return JSON:
 
 USER INPUT:
 "<<USER_INPUT>>"
+
+STRICT RULE:
+Return ONLY valid JSON.
+Do NOT include explanations, markdown, comments, or extra text.
+If unsure, return:
+{"tasks": [], "error": "Please clarify your request"}
 """
 
 # =========================
