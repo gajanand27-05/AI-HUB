@@ -15,16 +15,17 @@
       <div id="login-view">
         <h2>Welcome Back</h2>
         <p class="text-muted">Login to access AI HUB tools</p>
-        <form id="login-form">
+        <div id="login-error" class="auth-error hidden"></div>
+        <form id="login-form" onsubmit="handleLogin(event)">
           <div class="input-group">
             <label>Email</label>
-            <input type="email" required placeholder="name@domain.com">
+            <input type="email" id="login-email" required placeholder="name@domain.com">
           </div>
           <div class="input-group">
             <label>Password</label>
-            <input type="password" required placeholder="Enter password">
+            <input type="password" id="login-password" required placeholder="Enter password">
           </div>
-          <button type="button" class="btn-primary w-100" onclick="window.location.href='chatbot.html'">Login</button>
+          <button type="submit" id="login-btn" class="btn-primary w-100">Login</button>
         </form>
         <p class="switch-mode">New to AI HUB? <span onclick="toggleView('signup')">Create an account</span></p>
       </div>
@@ -32,11 +33,12 @@
       <!-- Sign Up View -->
       <div id="signup-view" class="hidden">
         <h2>Create Account</h2>
-        <p class="text-muted">Authenticate via mail to join</p>
+        <p class="text-muted">Join AI HUB to access all tools</p>
+        <div id="signup-error" class="auth-error hidden"></div>
         <form id="signup-form" onsubmit="handleSignup(event)">
           <div class="input-group">
             <label>Username</label>
-            <input type="text" required placeholder="Choose a unique username">
+            <input type="text" id="signup-username" required placeholder="Choose a unique username">
           </div>
           <div class="input-group">
             <label>Email</label>
@@ -44,9 +46,9 @@
           </div>
           <div class="input-group">
             <label>Password</label>
-            <input type="password" required placeholder="Create a strong password">
+            <input type="password" id="signup-password" required placeholder="Create a strong password">
           </div>
-          <button type="submit" class="btn-primary w-100">Create Account</button>
+          <button type="submit" id="signup-btn" class="btn-primary w-100">Create Account</button>
         </form>
         <p class="switch-mode">Already registered? <span onclick="toggleView('login')">Login here</span></p>
       </div>
@@ -55,6 +57,13 @@
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:8000';
+
+    // If already logged in, redirect
+    if (localStorage.getItem('ai_hub_token')) {
+      window.location.href = 'chatbot.html';
+    }
+
     function toggleView(view) {
       if(view === 'signup') {
         document.getElementById('login-view').classList.add('hidden');
@@ -65,52 +74,89 @@
       }
     }
 
-    function handleSignup(event) {
-      event.preventDefault();
-      const email = document.getElementById('signup-email').value;
-      
-      const btn = event.target.querySelector('button');
-      btn.innerText = 'Sending Mail...';
-      btn.disabled = true;
-      btn.style.opacity = '0.7';
+    function showError(elementId, message) {
+      const el = document.getElementById(elementId);
+      el.innerHTML = '<strong>⚠️</strong> ' + message;
+      el.classList.remove('hidden');
+    }
 
-      // Simulate a network delay for sending the email
-      setTimeout(() => {
-        btn.innerText = 'Verification Sent!';
-        btn.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
-        btn.style.borderColor = '#10b981';
-        btn.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
-        
-        // Create an attractive modal overlay to confirm the email was "sent"
-        const modal = document.createElement('div');
-        modal.className = 'glass-card';
-        modal.style.position = 'fixed';
-        modal.style.top = '50%';
-        modal.style.left = '50%';
-        modal.style.transform = 'translate(-50%, -50%)';
-        modal.style.zIndex = '1000';
-        modal.style.textAlign = 'center';
-        modal.style.maxWidth = '400px';
-        modal.style.width = '90%';
-        modal.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.3)';
-        
-        modal.innerHTML = `
-          <div style="font-size: 3rem; margin-bottom: 1rem;">✉️</div>
-          <h2 style="color: #10b981; margin-bottom: 1rem; font-size: 1.5rem;">Verification Email Sent!</h2>
-          <p class="text-muted" style="margin-bottom: 2rem; line-height: 1.5;">We've successfully dispatched a confirmation link to <br><strong style="color: var(--text-main);">${email}</strong>.<br><br>Please check your inbox and verify your address to fully activate your account.</p>
-          <button class="btn-primary" style="background:#10b981; border:none; color:#000;" onclick="window.location.href='chatbot.html'">Continue to Dashboard</button>
-        `;
-        
-        const overlay = document.createElement('div');
-        overlay.style.position = 'fixed';
-        overlay.style.inset = '0';
-        overlay.style.backgroundColor = 'rgba(0,0,0,0.85)';
-        overlay.style.backdropFilter = 'blur(5px)';
-        overlay.style.zIndex = '999';
-        
-        document.body.appendChild(overlay);
-        document.body.appendChild(modal);
-      }, 1800);
+    function hideError(elementId) {
+      document.getElementById(elementId).classList.add('hidden');
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      hideError('login-error');
+      
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('login-btn');
+      
+      btn.innerText = 'Logging in...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Login failed');
+        }
+
+        // Store token and username
+        localStorage.setItem('ai_hub_token', data.token);
+        localStorage.setItem('ai_hub_username', data.username);
+        window.location.href = 'chatbot.html';
+
+      } catch (error) {
+        showError('login-error', error.message);
+      } finally {
+        btn.innerText = 'Login';
+        btn.disabled = false;
+      }
+    }
+
+    async function handleSignup(event) {
+      event.preventDefault();
+      hideError('signup-error');
+
+      const username = document.getElementById('signup-username').value;
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      const btn = document.getElementById('signup-btn');
+
+      btn.innerText = 'Creating Account...';
+      btn.disabled = true;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Signup failed');
+        }
+
+        // Store token and username
+        localStorage.setItem('ai_hub_token', data.token);
+        localStorage.setItem('ai_hub_username', data.username);
+        window.location.href = 'chatbot.html';
+
+      } catch (error) {
+        showError('signup-error', error.message);
+      } finally {
+        btn.innerText = 'Create Account';
+        btn.disabled = false;
+      }
     }
   </script>
 </body>

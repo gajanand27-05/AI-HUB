@@ -7,3 +7,6 @@ PyPDF2
 python-docx
 Pillow
 python-dotenv
+PyJWT
+passlib[bcrypt]
+aiosqlite

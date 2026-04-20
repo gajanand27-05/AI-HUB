@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -11,6 +11,11 @@ import PyPDF2
 import docx
 from google import genai
 from google.genai import types
+from database import init_db, get_db
+from auth import (
+    SignupRequest, LoginRequest, TokenResponse,
+    hash_password, verify_password, create_token, get_current_user
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ai_hub")
@@ -20,6 +25,12 @@ load_dotenv()
 
 # Initialize FastAPI application
 app = FastAPI(title="AI Hub Backend API")
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup():
+    await init_db()
+    logger.info("Database initialized successfully")
 
 # Configure Cross-Origin Resource Sharing (CORS) 
 # to allow frontend HTML files to fetch data from this server
@@ -60,6 +71,97 @@ class TranslateRequest(BaseModel):
 
 class AssistantRequest(BaseModel):
     message: str
+
+# =========================
+# AUTH ENDPOINTS
+# =========================
+
+@app.post("/api/signup")
+async def signup(request: SignupRequest):
+    db = await get_db()
+    try:
+        # Check if user exists
+        cursor = await db.execute("SELECT id FROM users WHERE email = ?", (request.email,))
+        if await cursor.fetchone():
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        cursor = await db.execute("SELECT id FROM users WHERE username = ?", (request.username,))
+        if await cursor.fetchone():
+            raise HTTPException(status_code=400, detail="Username already taken")
+        
+        # Create user
+        hashed = hash_password(request.password)
+        cursor = await db.execute(
+            "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
+            (request.username, request.email, hashed)
+        )
+        await db.commit()
+        user_id = cursor.lastrowid
+        
+        token = create_token(user_id, request.username)
+        logger.info(f"New user registered: {request.username}")
+        return {"token": token, "username": request.username}
+    finally:
+        await db.close()
+
+@app.post("/api/login")
+async def login(request: LoginRequest):
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT id, username, password_hash FROM users WHERE email = ?",
+            (request.email,)
+        )
+        row = await cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        user_id, username, password_hash = row[0], row[1], row[2]
+        if not verify_password(request.password, password_hash):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        token = create_token(user_id, username)
+        logger.info(f"User logged in: {username}")
+        return {"token": token, "username": username}
+    finally:
+        await db.close()
+
+# =========================
+# HEALTH CHECK
+# =========================
+
+@app.get("/api/health")
+async def health_check():
+    return {
+        "status": "online",
+        "model": "gemini-2.5-flash",
+        "client_ready": client is not None
+    }
+
+# =========================
+# HISTORY ENDPOINT
+# =========================
+
+@app.get("/api/history")
+async def get_history(user: dict = Depends(get_current_user)):
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT prompt, tools_used, response, created_at FROM history WHERE user_id = ? ORDER BY created_at DESC LIMIT 20",
+            (user["user_id"],)
+        )
+        rows = await cursor.fetchall()
+        history = []
+        for row in rows:
+            history.append({
+                "prompt": row[0],
+                "tools_used": row[1],
+                "response": row[2],
+                "created_at": row[3]
+            })
+        return {"history": history}
+    finally:
+        await db.close()
 
 @app.post("/api/generate")
 async def generate_text(request: GenerateRequest):
@@ -517,12 +619,52 @@ def execute_tasks(tasks, user_input):
     }
 
 # =========================
+# SMART SUGGESTIONS
+# =========================
+
+def get_suggestions(tools_used):
+    """Generate contextual follow-up suggestions based on tools that were executed."""
+    suggestions = []
+    tool_set = set(tools_used)
+    
+    if "summarize" in tool_set and "translate" not in tool_set:
+        suggestions.append("Translate this summary to another language")
+    if "summarize" in tool_set and "generate-code" not in tool_set:
+        suggestions.append("Generate code based on this summary")
+    if "generate" in tool_set and "translate" not in tool_set:
+        suggestions.append("Translate this text")
+    if "generate-code" in tool_set:
+        suggestions.append("Explain this code in simple terms")
+    if "translate" in tool_set:
+        suggestions.append("Summarize the translated text")
+    if "analyze-image" in tool_set:
+        suggestions.append("Generate code based on this analysis")
+    
+    if not suggestions:
+        suggestions = ["Try another prompt", "Summarize a document", "Generate some code"]
+    
+    return suggestions[:3]
+
+# =========================
 # MAIN ASSISTANT ENDPOINT
 # =========================
 
 @app.post("/api/assistant")
-def assistant_handler(request: AssistantRequest):
+async def assistant_handler(
+    request: AssistantRequest,
+    debug: bool = Query(False),
+    user: dict = Depends(get_current_user)
+):
     user_input = request.message
+    
+    # Input validation
+    if len(user_input) > 5000:
+        return {"error": "Message too long. Maximum 5000 characters allowed."}
+    
+    if not user_input.strip():
+        return {"error": "Please enter a message."}
+
+    logger.info(f"Assistant request from user {user['username']}: {user_input[:100]}...")
 
     intent_data = detect_intent(user_input)
 
@@ -536,6 +678,39 @@ def assistant_handler(request: AssistantRequest):
 
     # Execute multi-step tasks
     result = execute_tasks(tasks, user_input)
+    
+    # Collect tools used for suggestions and history
+    tools_used = []
+    if "steps" in result:
+        tools_used = [step["tool"] for step in result["steps"]]
+    
+    # Add smart suggestions
+    result["suggestions"] = get_suggestions(tools_used)
+    
+    # Add debug info if requested
+    if debug:
+        result["debug"] = {
+            "raw_intent": intent_data,
+            "user_id": user["user_id"]
+        }
+    
+    # Store in history
+    try:
+        db = await get_db()
+        await db.execute(
+            "INSERT INTO history (user_id, prompt, tools_used, response) VALUES (?, ?, ?, ?)",
+            (
+                user["user_id"],
+                user_input,
+                json.dumps(tools_used),
+                json.dumps(result.get("final_output", ""))
+            )
+        )
+        await db.commit()
+        await db.close()
+        logger.info(f"History saved for user {user['username']}")
+    except Exception as e:
+        logger.error(f"Failed to save history: {str(e)}")
 
     return result
 

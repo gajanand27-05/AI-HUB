@@ -12,6 +12,18 @@
 </head>
 
 <body>
+  <!-- Server Status Indicator -->
+  <div id="status-indicator" class="status-indicator">
+    <span id="status-dot" class="status-dot offline"></span>
+    <span id="status-text">Checking...</span>
+  </div>
+
+  <!-- Logout Button -->
+  <div class="logout-container">
+    <span id="user-greeting" class="user-greeting"></span>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
   <div class="hub-wrapper">
     <div class="hub">
 
@@ -326,6 +338,60 @@
   </div>
 
   <script>
+    const API_BASE = 'http://localhost:8000';
+
+    // =========================
+    // AUTH GUARD
+    // =========================
+    const token = localStorage.getItem('ai_hub_token');
+    const username = localStorage.getItem('ai_hub_username');
+    
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+    
+    // Show username
+    if (username) {
+      document.getElementById('user-greeting').innerText = 'Hi, ' + username;
+    }
+
+    function logout() {
+      localStorage.removeItem('ai_hub_token');
+      localStorage.removeItem('ai_hub_username');
+      window.location.href = 'login.html';
+    }
+
+    function getAuthHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      };
+    }
+
+    // =========================
+    // SERVER STATUS POLLING
+    // =========================
+    async function checkServerStatus() {
+      try {
+        const response = await fetch(`${API_BASE}/api/health`);
+        const data = await response.json();
+        const dot = document.getElementById('status-dot');
+        const text = document.getElementById('status-text');
+        if (data.status === 'online') {
+          dot.className = 'status-dot online';
+          text.innerText = 'AI Online';
+        } else {
+          dot.className = 'status-dot offline';
+          text.innerText = 'AI Offline';
+        }
+      } catch {
+        document.getElementById('status-dot').className = 'status-dot offline';
+        document.getElementById('status-text').innerText = 'AI Offline';
+      }
+    }
+    checkServerStatus();
+    setInterval(checkServerStatus, 30000);
+
     // Modal controls
     function openTextGenerator() {
       document.getElementById('text-generator-modal').classList.remove('hidden');
@@ -1048,9 +1114,9 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-        const response = await fetch('http://localhost:8000/api/assistant', {
+        const response = await fetch(`${API_BASE}/api/assistant`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ message: message }),
           signal: controller.signal
         });
@@ -1060,6 +1126,10 @@
 
         if (!response.ok) {
           const errData = await response.json();
+          if (response.status === 401) {
+            logout();
+            return;
+          }
           throw new Error(errData.detail || 'Server error occurred');
         }
 
@@ -1097,6 +1167,10 @@
                 Prism.highlightAllUnder(finalOutput);
               }
             }
+            // Render suggestion chips
+            if (data.suggestions && data.suggestions.length > 0) {
+              renderSuggestions(data.suggestions);
+            }
           }, data.steps.length * 300 + 200);
         }
 
@@ -1126,6 +1200,39 @@
         });
       }
     });
+
+    // =========================
+    // SMART SUGGESTIONS
+    // =========================
+    function renderSuggestions(suggestions) {
+      // Remove any existing suggestions container
+      const existing = document.getElementById('suggestion-chips');
+      if (existing) existing.remove();
+
+      const container = document.createElement('div');
+      container.id = 'suggestion-chips';
+      container.className = 'suggestion-chips';
+
+      const label = document.createElement('span');
+      label.className = 'suggestion-label';
+      label.innerText = '💡 Try next:';
+      container.appendChild(label);
+
+      suggestions.forEach(text => {
+        const chip = document.createElement('button');
+        chip.className = 'suggestion-chip';
+        chip.innerText = text;
+        chip.onclick = () => {
+          document.getElementById('assistant-text-input').value = text;
+          sendAssistantRequest();
+        };
+        container.appendChild(chip);
+      });
+
+      // Append after final output
+      const finalEl = document.getElementById('assistant-final');
+      finalEl.parentNode.insertBefore(container, finalEl.nextSibling);
+    }
   </script>
   <!-- Prism.js Syntax Highlighting JS + Common Languages -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
