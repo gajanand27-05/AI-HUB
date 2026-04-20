@@ -5,10 +5,15 @@ from dotenv import load_dotenv
 import os
 import io
 import json
+import re
+import logging
 import PyPDF2
 import docx
 from google import genai
 from google.genai import types
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("ai_hub")
 
 # Load environment variables from .env file
 load_dotenv()
@@ -370,6 +375,10 @@ USER INPUT:
 STRICT RULE:
 Return ONLY valid JSON.
 Do NOT include explanations, markdown, comments, or extra text.
+Wrap your JSON output strictly between:
+BEGIN_JSON
+{ ... }
+END_JSON
 If unsure, return:
 {"tasks": [], "error": "Please clarify your request"}
 """
@@ -378,46 +387,36 @@ If unsure, return:
 # INTENT DETECTION
 # =========================
 
+def extract_json(text: str):
+    # Preferred: sentinel markers
+    match = re.search(r'BEGIN_JSON\s*(\{.*?\})\s*END_JSON', text, re.DOTALL)
+    if match:
+        return match.group(1)
+
+    # Fallback: first valid JSON object
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if match:
+        return match.group(0)
+
+    raise ValueError("No JSON found")
+
 def detect_intent(user_input: str):
-    try:
-        prompt = MASTER_PROMPT.replace("<<USER_INPUT>>", user_input)
-
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt
-        )
-
-        text = response.text.strip()
-
-        # Try parsing JSON
+    prompt = MASTER_PROMPT.replace("<<USER_INPUT>>", user_input)
+    MAX_RETRIES = 2
+    
+    for attempt in range(MAX_RETRIES):
         try:
-            # Safely extract JSON even if hidden behind conversational text
-            start_idx = text.find('{')
-            end_idx = text.rfind('}')
-            if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-                cleaned = text[start_idx:end_idx+1]
-            else:
-                cleaned = text.strip().removeprefix('```json').removesuffix('```').strip()
-            data = json.loads(cleaned)
-            return data
-        except:
-            # Retry forcing JSON
-            retry_prompt = prompt + "\nReturn ONLY valid JSON."
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
-                contents=retry_prompt
+                contents=prompt
             )
-            retry_text = response.text.strip()
-            start_idx = retry_text.find('{')
-            end_idx = retry_text.rfind('}')
-            if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-                cleaned_retry = retry_text[start_idx:end_idx+1]
-            else:
-                cleaned_retry = retry_text.removeprefix('```json').removesuffix('```').strip()
-            return json.loads(cleaned_retry)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Intent detection failed: {str(e)}")
+            clean_text = extract_json(response.text)
+            return json.loads(clean_text)
+        except Exception:
+            if attempt == MAX_RETRIES - 1:
+                raise HTTPException(status_code=500, detail="Failed to parse model response")
+            # Retry prompting
+            prompt += "\nReturn ONLY valid JSON."
 
 # =========================
 # TOOL EXECUTION FUNCTIONS
@@ -496,21 +495,34 @@ def assistant_handler(request: AssistantRequest):
 
     for t in intent_data["tasks"]:
         if t.get("tool") not in valid_tools:
-            raise HTTPException(status_code=400, detail="Invalid tool detected")
+            return {
+                "error": "Could not process request",
+                "details": f"Invalid task format: unknown tool detected '{t.get('tool')}'"
+            }
 
     task = intent_data["tasks"][0]
     
-    if "tool" not in task:
-        raise HTTPException(status_code=400, detail="Invalid task format")
+    required_keys = ["tool", "input"]
+    for key in required_keys:
+        if key not in task:
+            return {
+                "error": "Could not process request",
+                "details": f"Missing key: {key}"
+            }
         
-    tool = task["tool"]
-    print("Input type:", task.get("input"))
+    tool = task["tool"].lower().strip().replace("_", "-")
+    
+    logger.info(f"Detected tool: {tool}")
+    logger.info(f"Input type: {task.get('input')}")
 
     # Step 2: Execute tool
     try:
         result = execute_tool(tool, user_input)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "error": "Could not process request",
+            "details": str(e)
+        }
 
     # Step 3: Return response
     return {
