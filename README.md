@@ -72,5 +72,4 @@ AI Hub is a multimodal intelligence platform designed to handle diverse tasks in
 - **Phase 3:** Task Orchestration (AI Assistant, Intent Pipelining)
 - **Phase 4:** Production & Memory (Auth, History, Premium UX)
 
----
-*Created for the AI Hub College Project Submission - 2026.*
+
