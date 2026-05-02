@@ -1,5 +1,7 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Query
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Query, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
@@ -21,22 +23,49 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ai_hub")
 
 # Load environment variables from .env file
-load_dotenv()
+# We look in the current folder, and the parent folder to be safe
+env_paths = [
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
+    ".env"
+]
+for path in env_paths:
+    if os.path.exists(path):
+        load_dotenv(path, override=True)
+        logger.info(f"Loaded environment from {path}")
+        break
 
 # Initialize FastAPI application
 app = FastAPI(title="AI Hub Backend API")
+
+# Global Exception Handler to catch internal errors
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global Error: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal Server Error: {str(exc)}"},
+    )
 
 # Initialize database on startup
 @app.on_event("startup")
 async def startup():
     await init_db()
-    logger.info("Database initialized successfully")
+    if not os.getenv("GEMINI_API_KEY"):
+        logger.error("CRITICAL: GEMINI_API_KEY not found in environment!")
+    else:
+        logger.info("Database and AI Core initialized successfully")
 
 # Configure Cross-Origin Resource Sharing (CORS) 
 # to allow frontend HTML files to fetch data from this server
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # For local development. In production, restrict to your domain.
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,6 +74,13 @@ app.add_middleware(
 # Load API keys from environment variables
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SPEECH_API_KEY = os.getenv("SPEECH_API_KEY")
+
+# Some Google SDKs prefer GOOGLE_API_KEY
+if GEMINI_API_KEY:
+    os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY
+    logger.info(f"GEMINI_API_KEY loaded successfully (Length: {len(GEMINI_API_KEY)})")
+else:
+    logger.error("GEMINI_API_KEY NOT FOUND IN ENVIRONMENT")
 
 # Initialize the Gemini Client
 try:
@@ -71,6 +107,14 @@ class TranslateRequest(BaseModel):
 
 class AssistantRequest(BaseModel):
     message: str
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: list[ChatMessage] = []
 
 # =========================
 # AUTH ENDPOINTS
@@ -714,7 +758,68 @@ async def assistant_handler(
 
     return result
 
+# =========================
+# CONVERSATIONAL CHATBOT
+# =========================
+
+@app.post("/api/chat")
+async def chat_handler(
+    request: ChatRequest,
+    user: dict = Depends(get_current_user)
+):
+    if not client:
+        raise HTTPException(status_code=503, detail="Gemini AI client not initialized")
+    
+    user_input = request.message
+    history = request.history
+
+    if not user_input.strip():
+        return {"error": "Please enter a message."}
+
+    logger.info(f"Chat request from user {user['username']}: {user_input[:50]}...")
+
+    try:
+        # Convert Pydantic history objects to Gemini format
+        # Gemini expects roles: 'user' and 'model'
+        gemini_history = []
+        for msg in history:
+            role = "user" if msg.role == "user" else "model"
+            gemini_history.append({"role": role, "parts": [{"text": msg.content}]})
+
+        # Start a chat session with the provided history
+        chat_session = client.chats.create(
+            model="gemini-2.5-flash",
+            history=gemini_history
+        )
+
+        # Send the user's message and get a response
+        response = chat_session.send_message(user_input)
+        
+        return {
+            "status": "success",
+            "response": response.text
+        }
+
+    except Exception as e:
+        logger.error(f"Chat error: {str(e)}")
+        return {"error": f"Failed to get response from AI: {str(e)}"}
+
+# =========================
+# SERVE FRONTEND
+# =========================
+
+# Resolve the absolute path to the frontend directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "frontend")
+
+# Mount the frontend directory to serve static files (HTML, CSS, JS)
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+else:
+    logger.error(f"Frontend directory not found at {FRONTEND_DIR}")
+
 if __name__ == "__main__":
     import uvicorn
-    # Start the local development server at http://localhost:8000
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    # Start the local development server at http://0.0.0.0:8000
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+

@@ -9,4 +9,5 @@ Pillow
 python-dotenv
 PyJWT
 passlib[bcrypt]
+bcrypt==4.0.1
 aiosqlite

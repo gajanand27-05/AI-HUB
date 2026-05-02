@@ -1,0 +1,29 @@
+This is AI Hub - a full-stack AI orchestration platform. Here's what it does:
+Overview
+A web application that provides multiple AI-powered tools through a unified interface, powered by Google's Gemini API.
+Backend (backend/main.py)
+- FastAPI server running on localhost:8000
+- Authentication: Signup/login with JWT tokens
+- AI Tools:
+  - /api/generate - Text generation
+  - /api/generate-code - Code generation
+  - /api/summarize - Document summarization (PDF, DOCX, TXT, MD)
+  - /api/analyze-image - Image analysis with Gemini Vision
+  - /api/recognize-speech - Audio transcription
+  - /api/translate - Language translation
+  - /api/assistant - Smart router that auto-detects intent and chains multiple tools
+- Database: SQLite for user auth and history
+Frontend (frontend/)
+- index.html - Landing page
+- chatbot.html - Main dashboard with:
+  - Rotating tool nodes (circular UI)
+  - Modals for each AI tool
+  - AI Assistant that accepts natural language and auto-routes to appropriate tools
+  - History sidebar
+  - Speech recognition via Web Speech API
+- styles.css - Glass-morphism UI design
+Key Features
+- Multi-step task chaining (e.g., "summarize PDF and translate to Hindi")
+- Smart suggestions based on tools used
+- JWT authentication
+- Conversation history storage

@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr
 from fastapi import HTTPException, Header
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=False)
 
 # JWT secret key — in production, use a secure random key from env
 JWT_SECRET = os.getenv("JWT_SECRET", "ai-hub-secret-key-change-in-production")
@@ -35,7 +35,8 @@ class TokenResponse(BaseModel):
 # =========================
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # Bcrypt has a 72-byte limit. We truncate to 72 characters to prevent errors.
+    return pwd_context.hash(password[:72])
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)

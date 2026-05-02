@@ -12,6 +12,23 @@
 </head>
 
 <body>
+  <!-- History Sidebar Toggle -->
+  <button id="history-toggle" class="history-toggle" onclick="toggleHistory()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- History Sidebar -->
+  <div id="history-sidebar" class="history-sidebar">
+    <div class="sidebar-header">
+      <h3>📜 RECENT ACTIVITY</h3>
+    </div>
+    <div id="history-list" class="history-list">
+      <!-- History items will be injected here -->
+    </div>
+  </div>
+
   <!-- Server Status Indicator -->
   <div id="status-indicator" class="status-indicator">
     <span id="status-dot" class="status-dot offline"></span>
@@ -33,7 +50,7 @@
       <div class="node-positioner" style="transform: rotate(0deg) translate(300px);">
         <div class="node-upright" style="transform: rotate(0deg);">
           <div class="counter-spin">
-            <div class="tool-card">
+            <div class="tool-card" onclick="openChatbot()">
               <div class="tool-icon">💬</div>
               <div class="tool-name">AI Assist Chatbot</div>
             </div>
@@ -42,8 +59,8 @@
       </div>
 
       <!-- 2. Text Generator -->
-      <div class="node-positioner" style="transform: rotate(45deg) translate(300px);">
-        <div class="node-upright" style="transform: rotate(-45deg);">
+      <div class="node-positioner" style="transform: rotate(51.42deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-51.42deg);">
           <div class="counter-spin">
             <div class="tool-card" onclick="openTextGenerator()">
               <div class="tool-icon">📝</div>
@@ -54,8 +71,8 @@
       </div>
 
       <!-- 3. AI Summarizer -->
-      <div class="node-positioner" style="transform: rotate(90deg) translate(300px);">
-        <div class="node-upright" style="transform: rotate(-90deg);">
+      <div class="node-positioner" style="transform: rotate(102.85deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-102.85deg);">
           <div class="counter-spin">
             <div class="tool-card" onclick="openSummarizer()">
               <div class="tool-icon">✂️</div>
@@ -66,8 +83,8 @@
       </div>
 
       <!-- 4. Code Generator -->
-      <div class="node-positioner" style="transform: rotate(135deg) translate(300px);">
-        <div class="node-upright" style="transform: rotate(-135deg);">
+      <div class="node-positioner" style="transform: rotate(154.28deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-154.28deg);">
           <div class="counter-spin">
             <div class="tool-card" onclick="openCodeGenerator()">
               <div class="tool-icon">💻</div>
@@ -78,8 +95,8 @@
       </div>
 
       <!-- 5. Image Analyzer -->
-      <div class="node-positioner" style="transform: rotate(180deg) translate(300px);">
-        <div class="node-upright" style="transform: rotate(-180deg);">
+      <div class="node-positioner" style="transform: rotate(205.71deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-205.71deg);">
           <div class="counter-spin">
             <div class="tool-card" onclick="openImageAnalyzer()">
               <div class="tool-icon">🔍</div>
@@ -90,8 +107,8 @@
       </div>
 
       <!-- 6. Speech Recognition -->
-      <div class="node-positioner" style="transform: rotate(225deg) translate(300px);">
-        <div class="node-upright" style="transform: rotate(-225deg);">
+      <div class="node-positioner" style="transform: rotate(257.14deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-257.14deg);">
           <div class="counter-spin">
             <div class="tool-card" onclick="openSpeechRecognition()">
               <div class="tool-icon">🎙️</div>
@@ -102,24 +119,12 @@
       </div>
 
       <!-- 7. Language Translator -->
-      <div class="node-positioner" style="transform: rotate(270deg) translate(300px);">
-        <div class="node-upright" style="transform: rotate(-270deg);">
+      <div class="node-positioner" style="transform: rotate(308.57deg) translate(300px);">
+        <div class="node-upright" style="transform: rotate(-308.57deg);">
           <div class="counter-spin">
             <div class="tool-card" onclick="openLanguageTranslator()">
               <div class="tool-icon">🌐</div>
               <div class="tool-name">Language Translator</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 8. User Messenger -->
-      <div class="node-positioner" style="transform: rotate(315deg) translate(300px);">
-        <div class="node-upright" style="transform: rotate(-315deg);">
-          <div class="counter-spin">
-            <div class="tool-card">
-              <div class="tool-icon">👤</div>
-              <div class="tool-name">User Messenger</div>
             </div>
           </div>
         </div>
@@ -303,6 +308,30 @@
     </div>
   </div>
 
+  <!-- AI Chatbot Modal -->
+  <div id="chatbot-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>🤖 AI Assist Chatbot</h2>
+        <button class="close-btn" onclick="closeModal('chatbot-modal')">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 0; overflow: hidden;">
+        <div class="chat-container">
+          <div id="chat-history" class="chat-history">
+            <!-- Messages will appear here -->
+            <div class="chat-message ai">
+              Hello! I'm your AI Hub assistant. How can I help you today?
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <textarea id="chat-input" placeholder="Type your message..."></textarea>
+            <button id="chat-send-btn" class="chat-send-btn" onclick="sendChatMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- AI Assistant Modal -->
   <div id="assistant-modal" class="modal-overlay hidden">
     <div class="modal-content glass-card">
@@ -331,6 +360,9 @@
           <div id="assistant-final" class="final-output-container hidden">
             <h3>✨ Final Result</h3>
             <div id="assistant-final-output"></div>
+            <button class="export-btn" onclick="exportResult()">
+              <span>📥</span> Download Response (.txt)
+            </button>
           </div>
         </div>
       </div>
@@ -338,7 +370,7 @@
   </div>
 
   <script>
-    const API_BASE = 'http://localhost:8000';
+    const API_BASE = '';
 
     // =========================
     // AUTH GUARD
@@ -419,6 +451,89 @@
 
     function openAssistant() {
       document.getElementById('assistant-modal').classList.remove('hidden');
+    }
+
+    // --- Chatbot Logic ---
+    let chatHistory = [];
+
+    function openChatbot() {
+      document.getElementById('chatbot-modal').classList.remove('hidden');
+    }
+
+    async function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const historyEl = document.getElementById('chat-history');
+      const sendBtn = document.getElementById('chat-send-btn');
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      // Disable input while sending
+      input.value = '';
+      input.disabled = true;
+      sendBtn.disabled = true;
+
+      // Add user message to UI
+      const userMsgEl = document.createElement('div');
+      userMsgEl.className = 'chat-message user';
+      userMsgEl.innerText = message;
+      historyEl.appendChild(userMsgEl);
+      scrollToBottom('chat-history');
+
+      try {
+        const response = await fetch(`${API_BASE}/api/chat`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            message: message,
+            history: chatHistory
+          })
+        });
+
+        if (!response.ok) {
+           const errData = await response.json();
+           throw new Error(errData.detail || 'Failed to chat');
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          // Add AI message to UI
+          const aiMsgEl = document.createElement('div');
+          aiMsgEl.className = 'chat-message ai';
+          // Using our formatOutput helper for markdown support
+          aiMsgEl.innerHTML = formatOutput(data.response);
+          historyEl.appendChild(aiMsgEl);
+          
+          // Update local history for next turn
+          chatHistory.push({ role: 'user', content: message });
+          chatHistory.push({ role: 'ai', content: data.response });
+          
+          // Trigger Prism for any code blocks
+          if (window.Prism) {
+            Prism.highlightAllUnder(aiMsgEl);
+          }
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (error) {
+        const errorEl = document.createElement('div');
+        errorEl.className = 'chat-message ai';
+        errorEl.style.borderColor = '#ef4444';
+        errorEl.style.color = '#fca5a5';
+        errorEl.innerText = 'Error: ' + error.message;
+        historyEl.appendChild(errorEl);
+      } finally {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+        scrollToBottom('chat-history');
+      }
+    }
+
+    function scrollToBottom(id) {
+      const el = document.getElementById(id);
+      el.scrollTop = el.scrollHeight;
     }
 
     function closeModal(modalId) {
@@ -503,6 +618,17 @@
         document.getElementById('assistant-submit-btn').innerText = 'Send to AI Hub';
         document.getElementById('assistant-submit-btn').disabled = false;
       }
+
+      // Reset chatbot state when closing
+      if (modalId === 'chatbot-modal') {
+        document.getElementById('chat-input').value = '';
+        document.getElementById('chat-history').innerHTML = `
+          <div class="chat-message ai">
+            Hello! I'm your AI Hub assistant. How can I help you today?
+          </div>
+        `;
+        chatHistory = [];
+      }
     }
 
     // File input UX
@@ -570,7 +696,7 @@
 
       try {
         // Fetch to local FastAPI server
-        const response = await fetch('http://localhost:8000/api/generate', {
+        const response = await fetch(`${API_BASE}` + '/api/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -597,7 +723,7 @@
           throw new Error('Invalid response structure from server');
         }
       } catch (error) {
-        outputText.innerHTML = `<span style="color: #ef4444;"><strong>Error:</strong> Failed to connect to backend server. Make sure the FastAPI server is running on localhost:8000.\n\nDetails: ${error.message}</span>`;
+        outputText.innerHTML = `<span style="color: #ef4444;"><strong>Error:</strong> Failed to connect to backend server. Make sure the FastAPI server is running.\n\nDetails: ${error.message}</span>`;
       } finally {
         // Reset UI state
         btn.innerText = 'Generate Text';
@@ -624,7 +750,7 @@
       outputArea.classList.add('hidden');
 
       try {
-        const response = await fetch('http://localhost:8000/api/generate-code', {
+        const response = await fetch(`${API_BASE}` + '/api/generate-code', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -711,7 +837,7 @@
       outputArea.classList.add('hidden');
 
       try {
-        const response = await fetch('http://localhost:8000/api/summarize', {
+        const response = await fetch(`${API_BASE}` + '/api/summarize', {
           method: 'POST',
           body: formData
         });
@@ -770,7 +896,7 @@
       outputArea.classList.add('hidden');
 
       try {
-        const response = await fetch('http://localhost:8000/api/analyze-image', {
+        const response = await fetch(`${API_BASE}` + '/api/analyze-image', {
           method: 'POST',
           body: formData
         });
@@ -965,7 +1091,7 @@
       outputArea.classList.add('hidden');
 
       try {
-        const response = await fetch('http://localhost:8000/api/translate', {
+        const response = await fetch(`${API_BASE}` + '/api/translate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1161,16 +1287,16 @@
           // Show final output after all steps animate
           setTimeout(() => {
             if (data.final_output) {
-              finalOutput.innerHTML = formatOutput(data.final_output);
+              const formattedOutput = formatOutput(data.final_output);
               finalEl.classList.remove('hidden');
-              if (window.Prism) {
-                Prism.highlightAllUnder(finalOutput);
-              }
+              typeWriter(finalOutput, formattedOutput, 8);
             }
             // Render suggestion chips
             if (data.suggestions && data.suggestions.length > 0) {
               renderSuggestions(data.suggestions);
             }
+            // Refresh history sidebar
+            fetchHistory();
           }, data.steps.length * 300 + 200);
         }
 
@@ -1190,16 +1316,146 @@
 
     // Allow Enter key to submit (Shift+Enter for newline)
     document.addEventListener('DOMContentLoaded', () => {
-      const input = document.getElementById('assistant-text-input');
-      if (input) {
-        input.addEventListener('keydown', (e) => {
+      const assistantInput = document.getElementById('assistant-text-input');
+      if (assistantInput) {
+        assistantInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendAssistantRequest();
           }
         });
       }
+
+      const chatInput = document.getElementById('chat-input');
+      if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+          }
+        });
+      }
+      
+      // Load history on start
+      fetchHistory();
     });
+
+    // =========================
+    // HISTORY SIDEBAR LOGIC
+    // =========================
+    function toggleHistory() {
+      const sidebar = document.getElementById('history-sidebar');
+      const toggle = document.getElementById('history-toggle');
+      sidebar.classList.toggle('open');
+      toggle.classList.toggle('open');
+      
+      if (sidebar.classList.contains('open')) {
+        fetchHistory();
+      }
+    }
+
+    async function fetchHistory() {
+      try {
+        const response = await fetch(`${API_BASE}/api/history`, {
+          headers: getAuthHeaders()
+        });
+        if (response.ok) {
+          const data = await response.json();
+          renderHistory(data.history);
+        }
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+      }
+    }
+
+    function renderHistory(history) {
+      const list = document.getElementById('history-list');
+      list.innerHTML = '';
+      
+      if (!history || history.length === 0) {
+        list.innerHTML = '<p class="text-muted" style="text-align:center; margin-top:20px;">No recent activity</p>';
+        return;
+      }
+      
+      history.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        const date = new Date(item.created_at).toLocaleDateString();
+        const toolsArr = JSON.parse(item.tools_used);
+        const toolsStr = toolsArr.join(', ').replace('-', ' ');
+        
+        div.innerHTML = `
+          <div class="history-prompt">${item.prompt}</div>
+          <div class="history-meta">
+            <span>🛠️ ${toolsStr || 'Direct AI'}</span>
+            <span>📅 ${date}</span>
+          </div>
+        `;
+        
+        div.onclick = () => {
+          document.getElementById('assistant-text-input').value = item.prompt;
+          toggleHistory();
+          sendAssistantRequest();
+        };
+        
+        list.appendChild(div);
+      });
+    }
+
+    // =========================
+    // EXPORT RESULT
+    // =========================
+    function exportResult() {
+      const output = document.getElementById('assistant-final-output').innerText;
+      const prompt = document.getElementById('assistant-text-input').value || 'AI_Hub_Response';
+      const filename = `AI_Hub_${prompt.substring(0, 15).replace(/\s+/g, '_')}.txt`;
+      
+      const blob = new Blob([output], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // =========================
+    // PREMIUM TYPEWRITER EFFECT
+    // =========================
+    function typeWriter(element, html, speed = 10) {
+      element.innerHTML = '';
+      element.classList.remove('hidden');
+      
+      // For simplicity in keeping Prism.js working, we do a word-block insertion if HTML is complex
+      // or just a smooth fade-in if it's too much logic. 
+      // Here: We'll do a simple character-by-character for text but keep tag structure.
+      
+      let i = 0;
+      const timer = setInterval(() => {
+        if (i < html.length) {
+          // If we hit a tag, jump to end of it
+          if (html[i] === '<') {
+            const endTag = html.indexOf('>', i);
+            if (endTag !== -1) {
+              element.innerHTML += html.substring(i, endTag + 1);
+              i = endTag + 1;
+            } else {
+              element.innerHTML += html[i];
+              i++;
+            }
+          } else {
+            element.innerHTML += html[i];
+            i++;
+          }
+        } else {
+          clearInterval(timer);
+          // Highlight code after typing
+          if (window.Prism) {
+            Prism.highlightAllUnder(element);
+          }
+        }
+      }, speed);
+    }
 
     // =========================
     // SMART SUGGESTIONS
