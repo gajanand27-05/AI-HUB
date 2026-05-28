@@ -1,75 +1,111 @@
-# AI Hub
+# <p align="center">✨ AI HUB — Multimodal Intelligence Platform ✨</p>
 
-AI Hub is a multimodal intelligence platform designed to handle diverse tasks including document extraction, vision analysis, speech processing, and intelligent task orchestration. Built with a modern, glassmorphic UI, it provides a seamless and high-performance user experience.
+<p align="center">
+  <img src="https://img.shields.io/badge/AI-Gemini%202.5%20Flash-blueviolet?style=for-the-badge&logo=google-gemini" alt="Gemini">
+  <img src="https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react" alt="React">
+  <img src="https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite" alt="SQLite">
+</p>
 
-## 🚀 Features
+<p align="center">
+  <strong>The ultimate AI orchestration engine with a futuristic Glassmorphic UI.</strong>
+  <br />
+  <i>Empower your workflow with Vision, Speech, and Intelligent Task Pipelining.</i>
+</p>
 
-- **Circular Hub Interface:** A unique, interactive UI for navigating AI capabilities.
-- **Multimodal Intelligence:** 
-  - PDF and DOCX text extraction.
-  - Image analysis and vision capabilities.
-  - Speech-to-text and intent recognition.
-- **AI Assistant:** Powered by Google Gemini 2.5 Flash for advanced reasoning and task execution.
-- **Task Orchestration:** Step-by-step rendering of complex AI workflows.
-- **Secure Authentication:** JWT-based login system with SQLite-backed session history.
-- **Premium UX:** High-quality glassmorphism effects, interactive animations, and syntax highlighting via Prism.js.
+---
+
+## 🌌 Project Overview
+
+**AI Hub** is not just another chatbot. It is a high-performance **Multimodal Intelligence Platform** designed to handle diverse tasks through a unique **Circular Hub Interface**. Built with a focus on aesthetics and power, it uses **Google Gemini 2.5 Flash** to reason across text, images, and audio seamlessly.
+
+### 🎯 Key Highlights
+- **🎭 Glassmorphic UI:** A premium, translucent interface with interactive 3D-effect nodes.
+- **🔄 Intent Pipelining:** Ask complex questions; AI Hub breaks them down into executable tasks.
+- **📸 Vision Analysis:** Extract deep insights from images instantly.
+- **🎙️ Live Transcription:** Real-time speech-to-text with a built-in terminal UI.
+- **📑 Document Intelligence:** Instant summaries for PDF, DOCX, and Markdown files.
+
+---
+
+## 🚀 Interactive Features
+
+### 🎡 The Circular Hub
+A rotating, interactive dashboard where AI capabilities orbit a central core. Each "node" is a specialized tool:
+1. **AI Assist Chatbot:** General reasoning and conversation.
+2. **Text Generator:** High-quality creative and technical writing.
+3. **AI Summarizer:** Surgical extraction of data from documents.
+4. **Code Generator:** Expert-level code snippets with syntax highlighting.
+5. **Image Analyzer:** Detailed visual description and object detection.
+6. **Speech Recognition:** Native audio processing.
+7. **Language Translator:** Polyglot support for global communication.
+
+### 🧠 Smart Orchestration
+The "Master Assistant" acts as a conductor. If you say: *"Explain this image and translate the summary to Kannada,"* AI Hub automatically:
+1. Triggers **Vision Analysis**.
+2. Passes the output to the **Summarizer**.
+3. Feeds the final result into the **Translator**.
+
+---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **Framework:** React (Vite-based)
-- **Styling:** Vanilla CSS (Glassmorphism)
-- **Utilities:** Prism.js for code highlighting.
+| Layer | Technologies |
+|---|---|
+| **Frontend** | React, Vite, Vanilla CSS (Glassmorphism), Prism.js |
+| **Backend** | FastAPI (Python), Uvicorn, genai SDK |
+| **AI Models** | Google Gemini 2.5 Flash (Multimodal) |
+| **Persistence** | SQLite (aiosqlite), JWT Authentication |
+| **Processing** | PyPDF2, python-docx, Pillow |
 
-### Backend
-- **Framework:** FastAPI (Python)
-- **Server:** Uvicorn
-- **AI Core:** Google Gemini 2.5 Flash
-- **Database:** SQLite (aiosqlite)
-- **Security:** PyJWT, Passlib (Bcrypt)
-- **Document Processing:** PyPDF2, python-docx, Pillow
-
-## 📂 Project Structure
-
-- `backend/`: FastAPI application, authentication logic, database models, and AI integration.
-- `frontend/`: React-based interactive UI.
-- `docs/`: Detailed project phases and documentation summaries.
+---
 
 ## ⚙️ Installation & Setup
 
-### Backend Setup
-1. Navigate to the `backend` directory.
-2. Create a virtual environment:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-3. Install dependencies:
+### 📦 Prerequisites
+- Python 3.9+
+- Node.js & npm
+- Gemini API Key ([Get it here](https://aistudio.google.com/))
+
+### 🔧 Backend Configuration
+1. Clone the repo and navigate to `backend/`.
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-4. Configure your environment variables in a `.env` file (e.g., Gemini API keys).
-5. Start the server:
+3. Create a `.env` file:
+   ```env
+   GEMINI_API_KEY=your_api_key_here
+   JWT_SECRET=your_secure_secret
+   ```
+4. Start the engine:
    ```bash
    uvicorn main:app --reload
    ```
 
-### Frontend Setup
-1. Navigate to the `frontend` directory.
-2. Install dependencies:
+### 🎨 Frontend Configuration
+1. Navigate to `frontend/`.
+2. Install packages:
    ```bash
    npm install
    ```
-3. Start the development server:
+3. Launch the dashboard:
    ```bash
    npm run dev
    ```
 
-## 📜 Roadmap
+---
 
-- **Phase 1:** Foundation & Design (UI Core, Circular Hub)
-- **Phase 2:** Multimodal Intelligence (Extraction, Vision, Speech)
-- **Phase 3:** Task Orchestration (AI Assistant, Intent Pipelining)
-- **Phase 4:** Production & Memory (Auth, History, Premium UX)
+## 🤝 Connect with the Developer
 
+Developed with ❤️ by **Gajanand Dhayagode**.
 
+- **GitHub:** [@gajanand27-05](https://github.com/gajanand27-05)
+- **Email:** [gajanandvd2005@gmail.com](mailto:gajanandvd2005@gmail.com)
+- **Project Link:** [AI-HUB Repository](https://github.com/gajanand27-05/AI-HUB)
+
+---
+
+<p align="center">
+  <i>"Building the future of AI orchestration, one node at a time."</i>
+</p>
