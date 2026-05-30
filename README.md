@@ -50,7 +50,42 @@ The "Master Assistant" acts as a conductor. If you say: *"Explain this image and
 
 ## 🖥️ Dashboard & How It Works
 
-AI Hub features a high-fidelity **Circular Glassmorphic Dashboard**. Here is a breakdown of the interactive workflow:
+AI Hub features a high-fidelity **Circular Glassmorphic Dashboard**. Below is a visual representation of the interactive interface:
+
+### 🎡 Dashboard Layout Visualization
+
+```mermaid
+graph TD
+    subgraph "The Circular Hub"
+        Core((● AI HUB CORE ●))
+        
+        %% Tool Nodes orbiting the core
+        Core --- Node1[💬 AI Assist]
+        Core --- Node2[📝 Text Gen]
+        Core --- Node3[✂️ Summarizer]
+        Core --- Node4[💻 Code Gen]
+        Core --- Node5[🔍 Vision AI]
+        Core --- Node6[🎙️ Speech AI]
+        Core --- Node7[🌐 Translator]
+    end
+
+    %% Interface Components
+    Terminal[📟 Live Transcription Terminal]
+    History[📜 Recent Activity Sidebar]
+    Status[🟢 AI Online Status]
+
+    style Core fill:#0ea5e9,stroke:#fff,stroke-width:4px,color:#fff,font-weight:bold
+    style Node1 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
+    style Node2 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
+    style Node3 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
+    style Node4 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
+    style Node5 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
+    style Node6 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
+    style Node7 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
+    
+    style Terminal fill:#1e293b,stroke:#10b981,color:#10b981
+    style History fill:#1e293b,stroke:#64748b,color:#e2e8f0
+```
 
 ### 🎡 The Interface at a Glance
 The central "Core" acts as the gateway to the **Master Assistant**, while specialized tools orbit it for direct access.
