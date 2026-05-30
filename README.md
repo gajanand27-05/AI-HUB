@@ -75,17 +75,34 @@ graph TD
     Status[🟢 AI Online Status]
 
     style Core fill:#0ea5e9,stroke:#fff,stroke-width:4px,color:#fff,font-weight:bold
-    style Node1 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
-    style Node2 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
-    style Node3 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
-    style Node4 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
-    style Node5 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
-    style Node6 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
-    style Node7 fill:rgba(255,255,255,0.1),stroke:#38bdf8,color:#fff
+    style Node1 fill:#1e293b,stroke:#38bdf8,color:#fff
+    style Node2 fill:#1e293b,stroke:#38bdf8,color:#fff
+    style Node3 fill:#1e293b,stroke:#38bdf8,color:#fff
+    style Node4 fill:#1e293b,stroke:#38bdf8,color:#fff
+    style Node5 fill:#1e293b,stroke:#38bdf8,color:#fff
+    style Node6 fill:#1e293b,stroke:#38bdf8,color:#fff
+    style Node7 fill:#1e293b,stroke:#38bdf8,color:#fff
     
-    style Terminal fill:#1e293b,stroke:#10b981,color:#10b981
-    style History fill:#1e293b,stroke:#64748b,color:#e2e8f0
+    style Terminal fill:#0f172a,stroke:#10b981,color:#10b981
+    style History fill:#0f172a,stroke:#64748b,color:#e2e8f0
 ```
+
+### ✨ Simulated Workflow (Quick Demo)
+
+Here is a preview of how the **Master Assistant** orchestrates a complex multimodal request:
+
+**User Input:** 
+> *"Analyze this circuit board image, summarize the components, and translate the result to Hindi."*
+
+**AI Hub Execution:**
+1.  **[STEP 1] 🔍 Image Analyzer:** *Detects Resistors, Capacitors, and an IC. Context: "Electronic Hardware".*
+2.  **[STEP 2] ✂️ AI Summarizer:** *Generates a technical summary of the PCB layout and component density.*
+3.  **[STEP 3] 🌐 Language Translator:** *Converts the technical summary into fluent Hindi.*
+
+**Final Result:**
+> "यह एक प्रिंटेड सर्किट बोर्ड (PCB) है जिसमें कई प्रतिरोधक (Resistors) और संधारित्र (Capacitors) लगे हैं..."
+
+---
 
 ### 🎡 The Interface at a Glance
 The central "Core" acts as the gateway to the **Master Assistant**, while specialized tools orbit it for direct access.
