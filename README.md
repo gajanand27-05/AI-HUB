@@ -66,23 +66,27 @@ AI Hub follows a decoupled architecture designed for high-performance AI orchest
 
 ```mermaid
 graph TD
-    User((User)) -->|HTTPS/REST| Frontend[React + Glassmorphic Dashboard]
-    Frontend -->|JWT Bearer Token| API[FastAPI Gateway]
-    
-    subgraph "Backend Intelligence Layer"
-        API -->|Request| Master[Intent Pipelining Engine]
-        Master -->|Decomposition| TaskGraph{Task Orchestrator}
-        TaskGraph -->|Text/Creative| T1[Text Generator]
-        TaskGraph -->|Source Code| T2[Code Generator]
-        TaskGraph -->|Image/OCR| T3[Vision Analyzer]
-        TaskGraph -->|Audio/STT| T4[Speech Transcription]
+    User((User)) -->|HTTPS/REST| UI[React Glassmorphic UI]
+    UI -->|JWT Auth| API[FastAPI Gateway]
+
+    subgraph "Internal Intelligence Engine"
+        API --> Engine[Intent Pipelining Engine]
+        Engine --> Router{Task Router}
+        
+        Router --> T1[Text Gen]
+        Router --> T2[Code Gen]
+        Router --> T3[Vision AI]
+        Router --> T4[Speech AI]
     end
-    
-    API -->|Async I/O| DB[(SQLite + aiosqlite)]
-    Master -->|Multimodal Inference| Gemini[Google Gemini 2.5 Flash]
-    
+
+    %% External Connections
+    API -.-> DB[(SQLite Database)]
+    Engine -.-> Gemini[Gemini 2.5 Flash]
+
+    style Engine fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#fff
+    style Router fill:#334155,stroke:#38bdf8,stroke-width:2px,color:#fff
     style Gemini fill:#4f46e5,stroke:#fff,stroke-width:2px,color:#fff
-    style Frontend fill:#0ea5e9,stroke:#fff,stroke-width:2px,color:#fff
+    style UI fill:#0ea5e9,stroke:#fff,stroke-width:2px,color:#fff
     style API fill:#10b981,stroke:#fff,stroke-width:2px,color:#fff
 ```
 
