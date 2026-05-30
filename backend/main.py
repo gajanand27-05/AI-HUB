@@ -153,16 +153,16 @@ async def login(request: LoginRequest):
     db = await get_db()
     try:
         cursor = await db.execute(
-            "SELECT id, username, password_hash FROM users WHERE email = ?",
-            (request.email,)
+            "SELECT id, username, password_hash FROM users WHERE email = ? OR username = ?",
+            (request.identifier, request.identifier)
         )
         row = await cursor.fetchone()
         if not row:
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+            raise HTTPException(status_code=401, detail="Invalid credentials")
         
         user_id, username, password_hash = row[0], row[1], row[2]
         if not verify_password(request.password, password_hash):
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+            raise HTTPException(status_code=401, detail="Invalid credentials")
         
         token = create_token(user_id, username)
         logger.info(f"User logged in: {username}")

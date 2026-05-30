@@ -23,7 +23,7 @@ class SignupRequest(BaseModel):
     password: str
 
 class LoginRequest(BaseModel):
-    email: str
+    identifier: str
     password: str
 
 class TokenResponse(BaseModel):

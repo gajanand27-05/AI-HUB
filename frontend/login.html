@@ -18,8 +18,8 @@
         <div id="login-error" class="auth-error hidden"></div>
         <form id="login-form" onsubmit="handleLogin(event)">
           <div class="input-group">
-            <label>Email</label>
-            <input type="email" id="login-email" required placeholder="name@domain.com">
+            <label>Email or Username</label>
+            <input type="text" id="login-identifier" required placeholder="Enter email or username">
           </div>
           <div class="input-group">
             <label>Password</label>
@@ -88,7 +88,7 @@
       event.preventDefault();
       hideError('login-error');
       
-      const email = document.getElementById('login-email').value;
+      const identifier = document.getElementById('login-identifier').value;
       const password = document.getElementById('login-password').value;
       const btn = document.getElementById('login-btn');
       
@@ -99,7 +99,7 @@
         const response = await fetch(`${API_BASE}/api/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ identifier, password })
         });
 
         const data = await response.json();

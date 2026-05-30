@@ -60,6 +60,81 @@ The "Master Assistant" acts as a conductor. If you say: *"Explain this image and
 
 ---
 
+## 🏗️ System Architecture
+
+AI Hub follows a decoupled architecture designed for high-performance AI orchestration.
+
+```mermaid
+graph TD
+    User((User)) -->|HTTPS/REST| Frontend[React + Glassmorphic Dashboard]
+    Frontend -->|JWT Bearer Token| API[FastAPI Gateway]
+    
+    subgraph "Backend Intelligence Layer"
+        API -->|Request| Master[Intent Pipelining Engine]
+        Master -->|Decomposition| TaskGraph{Task Orchestrator}
+        TaskGraph -->|Text/Creative| T1[Text Generator]
+        TaskGraph -->|Source Code| T2[Code Generator]
+        TaskGraph -->|Image/OCR| T3[Vision Analyzer]
+        TaskGraph -->|Audio/STT| T4[Speech Transcription]
+    end
+    
+    API -->|Async I/O| DB[(SQLite + aiosqlite)]
+    Master -->|Multimodal Inference| Gemini[Google Gemini 2.5 Flash]
+    
+    style Gemini fill:#4f46e5,stroke:#fff,stroke-width:2px,color:#fff
+    style Frontend fill:#0ea5e9,stroke:#fff,stroke-width:2px,color:#fff
+    style API fill:#10b981,stroke:#fff,stroke-width:2px,color:#fff
+```
+
+---
+
+## 🔄 AI Orchestration Workflow
+
+The platform uses a unique **Intent Pipelining** flowchart to handle complex, multi-step requests.
+
+```mermaid
+flowchart LR
+    Input([User Prompt]) --> Detect{Intent Detection}
+    
+    subgraph "Orchestration Loop"
+    Detect -->|Multi-Step| Decomp[Task Decomposition]
+    Decomp -->|Task 1| Exec1[Tool Execution]
+    Exec1 -->|Output| Buffer[(Context Buffer)]
+    Buffer -->|Input| Exec2[Tool Execution]
+    end
+    
+    Detect -->|Single-Step| ExecDirect[Direct Execution]
+    
+    Exec2 --> Final([Final Response])
+    ExecDirect --> Final
+    
+    Final --> Suggest[Smart Suggestions]
+```
+
+---
+
+## 🧠 Core Algorithms
+
+### 1. Intent Pipelining (Task Decomposition)
+*   **Algorithm:** Few-Shot Chain-of-Thought (CoT) Prompting.
+*   **Logic:** The system utilizes a Master Assistant prompt to act as a **Natural Language Compiler**. It breaks down complex user inputs into a structured **Directed Acyclic Graph (DAG)** in JSON format, mapping specific intents to specialized tools.
+
+### 2. Contextual State Injection
+*   **Algorithm:** Iterative Buffer Management.
+*   **Logic:** For multi-step tasks, the engine implements a stateful buffer. It captures the output of Task *N* and dynamically injects it as the input for Task *N+1*, enabling workflows like "transcribe audio → summarize text → translate to Hindi."
+
+### 3. Spatial UI Mapping
+*   **Algorithm:** Trigonometric Polar-to-Cartesian Transformation.
+*   **Logic:** To achieve the circular hub interface, the frontend calculates node positions using `X = R * cos(θ)` and `Y = R * sin(θ)`. This is implemented via CSS custom properties and `calc()` for smooth rotations.
+
+### 4. Cryptographic Security
+*   **Algorithm:** Salted Bcrypt Hashing & HMAC-SHA256.
+*   **Logic:** 
+    *   **Bcrypt:** Uses an adaptive work factor (KDF) to protect user passwords against brute-force attacks.
+    *   **JWT:** Implements stateless authentication by signing user payloads with a 256-bit secret key, ensuring session integrity without server-side state.
+
+---
+
 ## ⚙️ Installation & Setup
 
 ### 📦 Prerequisites
