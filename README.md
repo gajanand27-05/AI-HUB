@@ -48,6 +48,33 @@ The "Master Assistant" acts as a conductor. If you say: *"Explain this image and
 
 ---
 
+## 🖥️ Dashboard & How It Works
+
+AI Hub features a high-fidelity **Circular Glassmorphic Dashboard**. Here is a breakdown of the interactive workflow:
+
+### 🎡 The Interface at a Glance
+The central "Core" acts as the gateway to the **Master Assistant**, while specialized tools orbit it for direct access.
+
+| Component | Visual Identity | Primary Function |
+| :--- | :---: | :--- |
+| **Central Core** | 🔵 | Triggers the Multi-Step Orchestrator |
+| **Tool Nodes** | ❄️ | Specialized single-task AI modules |
+| **Live Terminal** | 📟 | Real-time speech-to-text feedback |
+| **History Sidebar**| 📜 | Persistent storage of past AI insights |
+
+### 🛠️ Step-by-Step Walkthrough
+
+1.  **Authentication:** Secure login via JWT to access your personal AI workspace.
+2.  **Input Selection:** 
+    *   **Text:** Type complex natural language queries.
+    *   **Upload:** Attach PDFs, DOCX, or Images for deep analysis.
+    *   **Voice:** Use the "Speech Recognition" node for hands-free interaction.
+3.  **Autonomous Routing:** The **Intent Pipelining Engine** analyzes your request and determines the optimal sequence of tools.
+4.  **Multi-Step Execution:** Watch the AI work in real-time as it renders "Step Cards" for each completed sub-task.
+5.  **Final Synthesis:** Receive a polished, multimodal response with the option to **Export as TXT**.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technologies |
