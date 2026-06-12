@@ -19,6 +19,16 @@
 
 **AI Hub** is not just another chatbot. It is a high-performance **Multimodal Intelligence Platform** designed to handle diverse tasks through a unique **Circular Hub Interface**. Built with a focus on aesthetics and power, it uses **Google Gemini 2.5 Flash** to reason across text, images, and audio seamlessly.
 
+---
+
+## 🖼️ Preview
+
+<p align="center">
+  <img src="assets/preview.png" alt="AI Hub Preview" width="800">
+</p>
+
+---
+
 ### 🎯 Key Highlights
 - **🎭 Glassmorphic UI:** A premium, translucent interface with interactive 3D-effect nodes.
 - **🔄 Intent Pipelining:** Ask complex questions; AI Hub breaks them down into executable tasks.
